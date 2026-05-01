@@ -2,8 +2,9 @@ class GiftEntry {
   final int? id;
   final String giverName;
   final double amount;
-  final String paymentMethod;  // 支付方式：现金/微信/支付宝/银行转账
-  final String? note;           // 备注
+  final String paymentMethod;
+  final String? note;
+  final int sortOrder;
   final DateTime createdAt;
 
   GiftEntry({
@@ -12,8 +13,29 @@ class GiftEntry {
     required this.amount,
     this.paymentMethod = '现金',
     this.note,
+    this.sortOrder = 0,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
+
+  GiftEntry copyWith({
+    int? id,
+    String? giverName,
+    double? amount,
+    String? paymentMethod,
+    String? note,
+    int? sortOrder,
+    DateTime? createdAt,
+  }) {
+    return GiftEntry(
+      id: id ?? this.id,
+      giverName: giverName ?? this.giverName,
+      amount: amount ?? this.amount,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      note: note ?? this.note,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -22,6 +44,7 @@ class GiftEntry {
       'amount': amount,
       'paymentMethod': paymentMethod,
       'note': note,
+      'sortOrder': sortOrder,
       'createdAt': createdAt.millisecondsSinceEpoch,
     };
   }
@@ -33,12 +56,12 @@ class GiftEntry {
       amount: (map['amount'] as num).toDouble(),
       paymentMethod: map['paymentMethod'] as String? ?? '现金',
       note: map['note'] as String?,
+      sortOrder: map['sortOrder'] as int? ?? 0,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
     );
   }
 }
 
-// 支付方式选项
 enum PaymentMethod {
   cash('现金', '💵'),
   wechat('微信', '💚'),
@@ -49,6 +72,13 @@ enum PaymentMethod {
   final String emoji;
 
   const PaymentMethod(this.label, this.emoji);
+
+  static PaymentMethod fromLabel(String label) {
+    return all.firstWhere(
+      (m) => m.label == label,
+      orElse: () => cash,
+    );
+  }
 
   static List<PaymentMethod> get all => values;
 }
