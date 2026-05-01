@@ -31,7 +31,7 @@ class ExportGiftBookScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: _PreviewList(gifts: gifts, totalAmount: totalAmount),
+              child: _PreviewCard(gifts: gifts, totalAmount: totalAmount),
             ),
           ),
           Container(
@@ -267,8 +267,8 @@ class ExportGiftBookScreen extends StatelessWidget {
                         color: isEven ? Colors.white : const Color(0xFFFAF7F2),
                         border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.07))),
                       ),
-                      child: Row(
-                        children: const [
+                      child: const Row(
+                        children: [
                           _Cell('', width: 40),
                           _Cell('', flex: 2),
                           _Cell('', flex: 3),
@@ -478,7 +478,7 @@ class _Cell extends StatelessWidget {
         width: width,
         child: Text(
           text,
-          textAlign: center ? TextAlign.center : TextAlign.start,
+          textAlign: center ? TextAlign.center : TextAlign.center,
           style: style,
           overflow: TextOverflow.ellipsis,
         ),
@@ -489,7 +489,7 @@ class _Cell extends StatelessWidget {
         flex: flex!,
         child: Text(
           text,
-          textAlign: center ? TextAlign.center : TextAlign.start,
+          textAlign: center ? TextAlign.center : TextAlign.center,
           style: style,
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
@@ -542,22 +542,23 @@ class _SummaryItem extends StatelessWidget {
   }
 }
 
-// ─── 预览列表（与导出图片一致的布局）────────────────────────────────────────
+// ─── 预览卡片（与导出图片完全一致的布局）────────────────────────────────────
 
-class _PreviewList extends StatelessWidget {
+class _PreviewCard extends StatelessWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
 
-  const _PreviewList({required this.gifts, required this.totalAmount});
+  const _PreviewCard({required this.gifts, required this.totalAmount});
 
   @override
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
+    final dateFmt = DateFormat('yyyy年MM月dd日');
     final pageCount = (gifts.length / 12).ceil();
 
     return Column(
       children: [
-        // 头部预览
+        // 头部
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
@@ -589,7 +590,7 @@ class _PreviewList extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      DateFormat('yyyy年MM月dd日').format(DateTime.now()),
+                      dateFmt.format(DateTime.now()),
                       style: const TextStyle(fontSize: 10, color: Colors.white),
                     ),
                   ),
@@ -599,18 +600,41 @@ class _PreviewList extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _StatItem(label: '总笔数', value: '${gifts.length}'),
+                  Column(
+                    children: [
+                      Text('总笔数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                      const SizedBox(height: 2),
+                      Text('${gifts.length}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
                   Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
-                  _StatItem(label: '礼金总额', value: currencyFmt.format(totalAmount), valueColor: const Color(0xFFFFE066)),
+                  Column(
+                    children: [
+                      Text('礼金总额', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                      const SizedBox(height: 2),
+                      Text(currencyFmt.format(totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                    ],
+                  ),
                   Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
-                  _StatItem(label: '记录页数', value: '$pageCount'),
+                  Column(
+                    children: [
+                      Text('记录页数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                      const SizedBox(height: 2),
+                      Text('$pageCount', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
                 ],
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
+
+        // 支付方式统计
+        _PreviewPaymentSummary(gifts: gifts, currencyFmt: currencyFmt),
+
+        const SizedBox(height: 8),
 
         // 表头
         Container(
@@ -631,103 +655,171 @@ class _PreviewList extends StatelessWidget {
 
         const SizedBox(height: 4),
 
-        // 记录列表（只显示前12条作为预览）
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.brown.withOpacity(0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Column(
-              children: List.generate(
-                gifts.length.clamp(0, 12),
-                (index) {
-                  final gift = gifts[index];
-                  final isEven = index % 2 == 0;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isEven ? Colors.white : const Color(0xFFFAF7F2),
-                      border: Border(
-                        bottom: BorderSide(color: Colors.brown.withOpacity(0.06)),
+        // 全部记录（按页分组，与导出图片完全一致）
+        ...List.generate(pageCount, (pageIndex) {
+          final startIdx = pageIndex * 12;
+          final endIdx = (startIdx + 12).clamp(0, gifts.length);
+          final pageGifts = gifts.sublist(startIdx, endIdx);
+
+          return Column(
+            children: [
+              // 页眉
+              if (pageIndex > 0)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE07B54).withOpacity(0.04),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.subdirectory_arrow_right, size: 12, color: Color(0xFFE07B54)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '第 ${pageIndex + 1} 页（续）',
+                        style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54), fontWeight: FontWeight.w500),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        _PCell('${index + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
-                        _PCell(gift.giverName, flex: 2),
-                        _PCell(_formatAmountPreview(currencyFmt, gift), flex: 3),
-                        _PCell(gift.note ?? '', flex: 3, fontSize: 11, color: const Color(0xFF9E8B7D)),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // 支付方式汇总
-        _buildSummary(currencyFmt),
-
-        if (gifts.length > 12)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE07B54).withOpacity(0.04),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.info_outline, size: 14, color: Color(0xFFE07B54)),
-                const SizedBox(width: 6),
-                Text(
-                  '共 ${gifts.length} 条记录，分 $pageCount 页导出',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFFE07B54)),
+                      const Spacer(),
+                      Text(
+                        '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
+                        style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
 
-  Widget _buildSummary(NumberFormat currencyFmt) {
-    final cashTotal = _sumByMethod(gifts, '现金');
-    final wechatTotal = _sumByMethod(gifts, '微信');
-    final alipayTotal = _sumByMethod(gifts, '支付宝');
+              // 记录列表
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
+                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : const Radius.circular(0),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.brown.withOpacity(0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(
+                    top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
+                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
+                  ),
+                  child: Column(
+                    children: pageGifts.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final gift = entry.value;
+                      final globalIndex = startIdx + index;
+                      final isEven = index % 2 == 0;
 
-    return Container(
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: isEven ? Colors.white : const Color(0xFFFAF7F2),
+                          border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.06))),
+                        ),
+                        child: Row(
+                          children: [
+                            _PCell('${globalIndex + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
+                            _PCell(gift.giverName, flex: 2),
+                            _PCell(_formatAmount(currencyFmt, gift), flex: 3),
+                            _PCell(gift.note ?? '', flex: 3, fontSize: 11, color: const Color(0xFF9E8B7D)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+              // 页脚
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE07B54).withOpacity(0.03),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '第 ${pageIndex + 1} / $pageCount 页',
+                      style: TextStyle(fontSize: 10, color: Colors.brown[300]),
+                    ),
+                    Text(
+                      '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
+                      style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          );
+        }),
+
+        // 底部汇总
+        Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _SummaryCol(label: '总笔数', value: '${gifts.length}'),
-              _SummaryCol(label: '礼金总额', value: currencyFmt.format(totalAmount), valueColor: const Color(0xFFE07B54)),
-              _SummaryCol(label: '现金', value: currencyFmt.format(cashTotal)),
-              _SummaryCol(label: '微信', value: currencyFmt.format(wechatTotal)),
-              _SummaryCol(label: '支付宝', value: currencyFmt.format(alipayTotal)),
+              _SummaryCol(label: '总笔数', value: '${gifts.length}', color: const Color(0xFFE07B54)),
+              _SummaryCol(label: '礼金总额', value: currencyFmt.format(totalAmount), color: const Color(0xFFE07B54)),
+              _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(gifts, '现金'))),
+              _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(gifts, '微信'))),
+              _SummaryCol(label: '支付宝', value: currencyFmt.format(_sumByMethod(gifts, '支付宝'))),
             ],
           ),
-        );
+        ),
+      ],
+    );
   }
 
-  String _formatAmountPreview(NumberFormat currencyFmt, GiftEntry gift) {
+  Widget _PreviewPaymentSummary({required List<GiftEntry> gifts, required NumberFormat currencyFmt}) {
+    final cashTotal = _sumByMethod(gifts, '现金');
+    final wechatTotal = _sumByMethod(gifts, '微信');
+    final alipayTotal = _sumByMethod(gifts, '支付宝');
+    final bankTotal = _sumByMethod(gifts, '银行转账');
+
+    final hasMultiple = [cashTotal, wechatTotal, alipayTotal, bankTotal].where((t) => t > 0).length;
+    if (hasMultiple <= 1) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.pie_chart_outline, size: 12, color: Color(0xFFE07B54)),
+          const SizedBox(width: 4),
+          Text('支付方式', style: TextStyle(fontSize: 10, color: Colors.brown[400], fontWeight: FontWeight.w500)),
+          const SizedBox(width: 8),
+          if (cashTotal > 0) _PreviewChip(label: '现金', amount: currencyFmt.format(cashTotal)),
+          if (wechatTotal > 0) _PreviewChip(label: '微信', amount: currencyFmt.format(wechatTotal)),
+          if (alipayTotal > 0) _PreviewChip(label: '支付宝', amount: currencyFmt.format(alipayTotal)),
+          if (bankTotal > 0) _PreviewChip(label: '银行转账', amount: currencyFmt.format(bankTotal)),
+        ],
+      ),
+    );
+  }
+
+  String _formatAmount(NumberFormat currencyFmt, GiftEntry gift) {
     if (gift.paymentMethod != '现金') {
       return '${currencyFmt.format(gift.amount)}（${gift.paymentMethod}）';
     }
@@ -736,28 +828,6 @@ class _PreviewList extends StatelessWidget {
 
   double _sumByMethod(List<GiftEntry> gifts, String method) {
     return gifts.where((g) => g.paymentMethod == method).fold(0.0, (sum, g) => sum + g.amount);
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  const _StatItem({required this.label, required this.value, this.valueColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: valueColor ?? Colors.white),
-        ),
-      ],
-    );
   }
 }
 
@@ -810,25 +880,36 @@ class _PCell extends StatelessWidget {
     if (width != null) {
       return SizedBox(
         width: width,
-        child: Text(text, textAlign: center ? TextAlign.center : TextAlign.start, style: style, overflow: TextOverflow.ellipsis),
+        child: Text(
+          text,
+          textAlign: center ? TextAlign.center : TextAlign.center,
+          style: style,
+          overflow: TextOverflow.ellipsis,
+        ),
       );
     }
     if (flex != null) {
       return Expanded(
         flex: flex!,
-        child: Text(text, textAlign: center ? TextAlign.center : TextAlign.start, style: style, overflow: TextOverflow.ellipsis, maxLines: 1),
+        child: Text(
+          text,
+          textAlign: center ? TextAlign.center : TextAlign.center,
+          style: style,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       );
     }
-    return Text(text, style: style);
+    return Text(text, textAlign: TextAlign.center, style: style);
   }
 }
 
 class _SummaryCol extends StatelessWidget {
   final String label;
   final String value;
-  final Color? valueColor;
+  final Color? color;
 
-  const _SummaryCol({required this.label, required this.value, this.valueColor});
+  const _SummaryCol({required this.label, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -836,8 +917,31 @@ class _SummaryCol extends StatelessWidget {
       children: [
         Text(label, style: TextStyle(fontSize: 10, color: Colors.brown[400])),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: valueColor ?? const Color(0xFF8B6347))),
+        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color ?? const Color(0xFF8B6347))),
       ],
+    );
+  }
+}
+
+class _PreviewChip extends StatelessWidget {
+  final String label;
+  final String amount;
+
+  const _PreviewChip({required this.label, required this.amount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAF7F2),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '$label $amount',
+        style: const TextStyle(fontSize: 10, color: Color(0xFF8B6347)),
+      ),
     );
   }
 }
