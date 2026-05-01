@@ -107,7 +107,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
       children: [
         // 左侧：头部统计 + 输入表单
         Container(
-          width: 260,
+          width: 360,
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [

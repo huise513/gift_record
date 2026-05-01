@@ -71,10 +71,11 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
     return Column(
       children: [
         Expanded(
-          child: Center(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Center(
               child: _PreviewCard(
                 gifts: widget.gifts,
                 totalAmount: widget.totalAmount,

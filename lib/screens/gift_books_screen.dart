@@ -61,7 +61,6 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
       );
     }
   }
-
   void _showAddDialog() {
     showModalBottomSheet(
       context: context,
@@ -76,6 +75,18 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
             builder: (_) => GiftListScreen(bookId: book.id!, bookName: book.name),
           ),
         ).then((_) => _loadBooks());
+      }),
+    );
+  }
+
+  void _showEditDialog(GiftBook book) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _EditGiftBookSheet(book: book, onUpdated: (updated) {
+        Navigator.pop(ctx);
+        _loadBooks();
       }),
     );
   }
@@ -296,6 +307,7 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
             );
             _loadBooks();
           },
+          onEdit: () => _showEditDialog(book),
           onDelete: () => _deleteBook(book),
         );
       },
@@ -361,6 +373,7 @@ class _GiftBookCard extends StatelessWidget {
   final NumberFormat currencyFmt;
   final DateFormat dateFmt;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _GiftBookCard({
@@ -368,6 +381,7 @@ class _GiftBookCard extends StatelessWidget {
     required this.currencyFmt,
     required this.dateFmt,
     required this.onTap,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -469,6 +483,7 @@ class _GiftBookCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Column(
                   children: [
                     IconButton(
@@ -477,11 +492,22 @@ class _GiftBookCard extends StatelessWidget {
                       color: Colors.brown[200],
                       visualDensity: VisualDensity.compact,
                     ),
-                    IconButton(
-                      onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline, size: 16),
-                      color: Colors.red[200],
-                      visualDensity: VisualDensity.compact,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: onEdit,
+                          icon: const Icon(Icons.edit_outlined, size: 16),
+                          color: Colors.blue[200],
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        IconButton(
+                          onPressed: onDelete,
+                          icon: const Icon(Icons.delete_outline, size: 16),
+                          color: Colors.red[200],
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -493,7 +519,6 @@ class _GiftBookCard extends StatelessWidget {
     );
   }
 }
-
 class _StatChip extends StatelessWidget {
   final String label;
   final String value;
@@ -690,6 +715,148 @@ class _TypeOption extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── 编辑礼金本底部弹窗 ───────────────────────────────────────────────────
+
+class _EditGiftBookSheet extends StatefulWidget {
+  final GiftBook book;
+  final void Function(GiftBook book) onUpdated;
+
+  const _EditGiftBookSheet({required this.book, required this.onUpdated});
+
+  @override
+  State<_EditGiftBookSheet> createState() => _EditGiftBookSheetState();
+}
+
+class _EditGiftBookSheetState extends State<_EditGiftBookSheet> {
+  late final TextEditingController _nameController;
+  late GiftBookType _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.book.name);
+    _selectedType = widget.book.type;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+
+    final updated = widget.book.copyWith(
+      name: name,
+      type: _selectedType,
+    );
+    await DbService.updateGiftBook(updated);
+    widget.onUpdated(updated);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.brown[200],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '编辑礼金本',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF3D2B1F),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: '礼金本名称',
+              hintText: '例如：王先生婚宴',
+              filled: true,
+              fillColor: const Color(0xFFFAF7F2),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              prefixIcon: const Icon(Icons.book_outlined, color: Color(0xFFE07B54)),
+            ),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '类型',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3D2B1F),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _TypeOption(
+                type: GiftBookType.wedding,
+                selected: _selectedType == GiftBookType.wedding,
+                onTap: () => setState(() => _selectedType = GiftBookType.wedding),
+              ),
+              const SizedBox(width: 12),
+              _TypeOption(
+                type: GiftBookType.birthday,
+                selected: _selectedType == GiftBookType.birthday,
+                onTap: () => setState(() => _selectedType = GiftBookType.birthday),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE07B54),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('保存', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
       ),
     );
   }
