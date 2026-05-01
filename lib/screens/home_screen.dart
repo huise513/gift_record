@@ -17,6 +17,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loading = true;
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  PaymentMethod _selectedPayment = PaymentMethod.cash;
+  bool _showNote = false;
 
   @override
   void initState() {
@@ -54,9 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    await DbService.insertGift(GiftEntry(giverName: name, amount: amount));
+    await DbService.insertGift(GiftEntry(
+      giverName: name,
+      amount: amount,
+      paymentMethod: _selectedPayment.label,
+      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+    ));
+
     _nameController.clear();
     _amountController.clear();
+    _noteController.clear();
+    setState(() {
+      _selectedPayment = PaymentMethod.cash;
+      _showNote = false;
+    });
     _loadGifts();
   }
 
@@ -89,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
@@ -237,6 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
+          // 姓名 + 金额 行
           Row(
             children: [
               Expanded(
@@ -277,14 +293,116 @@ class _HomeScreenState extends State<HomeScreen> {
                       contentPadding: EdgeInsets.symmetric(vertical: 14),
                     ),
                     keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _addGift(),
+                    textInputAction: TextInputAction.next,
                   ),
                 ),
               ),
             ],
           ),
+
+          const SizedBox(height: 12),
+
+          // 支付方式选择
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAF7F2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                const Icon(Icons.payment_outlined, size: 18, color: Color(0xFFE07B54)),
+                const SizedBox(width: 8),
+                Text('支付方式', style: TextStyle(fontSize: 12, color: Colors.brown[400])),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Row(
+                    children: PaymentMethod.all.map((method) {
+                      final isSelected = _selectedPayment == method;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedPayment = method),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFE07B54) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  method.emoji,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  method.label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? Colors.white : Colors.brown[400],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 备注展开/收起
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => setState(() => _showNote = !_showNote),
+            child: Row(
+              children: [
+                Icon(
+                  _showNote ? Icons.expand_less : Icons.expand_more,
+                  size: 20,
+                  color: Colors.brown[300],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '添加备注',
+                  style: TextStyle(fontSize: 12, color: Colors.brown[300]),
+                ),
+              ],
+            ),
+          ),
+
+          // 备注输入框（展开时显示）
+          if (_showNote) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAF7F2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  hintText: '备注（可选），如：关系/酒席名称等',
+                  prefixIcon: Icon(Icons.note_outlined, color: Color(0xFFE07B54), size: 20),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 12),
+                ),
+                maxLines: 2,
+                minLines: 1,
+              ),
+            ),
+          ],
+
           const SizedBox(height: 14),
+
+          // 提交按钮
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -361,9 +479,9 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF7F2),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFAF7F2),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
@@ -440,13 +558,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    title: Text(
-                      gift.giverName,
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                    title: Row(
+                      children: [
+                        Text(
+                          gift.giverName,
+                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                        ),
+                        if (gift.note != null && gift.note!.isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE07B54).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              gift.note!,
+                              style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    subtitle: Text(
-                      dateFmt.format(gift.createdAt),
-                      style: TextStyle(fontSize: 11, color: Colors.brown[300]),
+                    subtitle: Row(
+                      children: [
+                        Text(
+                          dateFmt.format(gift.createdAt),
+                          style: TextStyle(fontSize: 11, color: Colors.brown[300]),
+                        ),
+                        const SizedBox(width: 8),
+                        _PaymentBadge(method: gift.paymentMethod),
+                      ],
                     ),
                     trailing: Text(
                       currencyFmt.format(gift.amount),
@@ -489,6 +633,41 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 4),
         Text(value, style: valueStyle),
       ],
+    );
+  }
+}
+
+class _PaymentBadge extends StatelessWidget {
+  final String method;
+
+  const _PaymentBadge({required this.method});
+
+  @override
+  Widget build(BuildContext context) {
+    final emoji = switch (method) {
+      '微信' => '💚',
+      '支付宝' => '🔵',
+      '银行转账' => '🏦',
+      _ => '💵',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAF7F2),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 10)),
+          const SizedBox(width: 2),
+          Text(
+            method,
+            style: TextStyle(fontSize: 10, color: Colors.brown[300]),
+          ),
+        ],
+      ),
     );
   }
 }

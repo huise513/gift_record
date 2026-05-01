@@ -17,16 +17,24 @@ class DbService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE gifts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             giverName TEXT NOT NULL,
             amount REAL NOT NULL,
+            paymentMethod TEXT NOT NULL DEFAULT '现金',
+            note TEXT,
             createdAt INTEGER NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute("ALTER TABLE gifts ADD COLUMN paymentMethod TEXT NOT NULL DEFAULT '现金'");
+          await db.execute("ALTER TABLE gifts ADD COLUMN note TEXT");
+        }
       },
     );
   }

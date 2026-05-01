@@ -3,7 +3,6 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
 
@@ -67,15 +66,14 @@ class ExportGiftBookScreen extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
     final dateFmt = DateFormat('yyyy年MM月dd日 HH:mm');
 
-    // 每页最多15条记录
-    const itemsPerPage = 15;
+    const itemsPerPage = 12;
+    final totalPages = (gifts.length / itemsPerPage).ceil();
 
-    // 构建页面
     final pages = <Widget>[];
     for (var i = 0; i < gifts.length; i += itemsPerPage) {
       final pageGifts = gifts.skip(i).take(itemsPerPage).toList();
       final pageNum = i ~/ itemsPerPage + 1;
-      pages.add(_buildPage(pageGifts, pageNum, currencyFmt, dateFmt));
+      pages.add(_buildPage(pageGifts, pageNum, totalPages, currencyFmt, dateFmt));
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -121,15 +119,16 @@ class ExportGiftBookScreen extends StatelessWidget {
   Widget _buildPage(
     List<GiftEntry> pageGifts,
     int pageNum,
+    int totalPages,
     NumberFormat currencyFmt,
     DateFormat dateFmt,
   ) {
-    const itemsPerPage = 15;
-    final totalPages = (gifts.length / itemsPerPage).ceil();
+    const itemsPerPage = 12;
     final pageTotal = pageGifts.fold(0.0, (sum, g) => sum + g.amount);
+    final giftsWithNotes = pageGifts.where((g) => g.note != null && g.note!.isNotEmpty).toList();
 
     return Container(
-      width: 650,
+      width: 680,
       color: const Color(0xFFFAF7F2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -137,7 +136,7 @@ class ExportGiftBookScreen extends StatelessWidget {
           // 封面头部
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 32),
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
@@ -147,43 +146,68 @@ class ExportGiftBookScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  '礼 金 本',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 10,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(width: 60),
+                    const Text(
+                      '礼 金 本',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 8,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$pageNum / $totalPages',
+                        style: const TextStyle(fontSize: 12, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Text(
                   DateFormat('yyyy年MM月dd日').format(DateTime.now()),
-                  style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.75)),
+                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Column(
                         children: [
-                          Text('笔数', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7))),
-                          const SizedBox(height: 4),
-                          Text('${pageGifts.length}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text('本页笔数', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text('${pageGifts.length}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
-                      Container(width: 1, height: 36, color: Colors.white.withOpacity(0.3)),
+                      Container(width: 1, height: 30, color: Colors.white.withOpacity(0.25)),
                       Column(
                         children: [
-                          Text('本页小计', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7))),
-                          const SizedBox(height: 4),
-                          Text(currencyFmt.format(pageTotal), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                          Text('本页小计', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text(currencyFmt.format(pageTotal), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                        ],
+                      ),
+                      Container(width: 1, height: 30, color: Colors.white.withOpacity(0.25)),
+                      Column(
+                        children: [
+                          Text('累计总额', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text(currencyFmt.format(totalAmount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
                     ],
@@ -195,19 +219,21 @@ class ExportGiftBookScreen extends StatelessWidget {
 
           // 表头
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFE07B54).withOpacity(0.08),
+              color: const Color(0xFFE07B54).withOpacity(0.06),
               border: Border(
                 bottom: BorderSide(color: const Color(0xFFE07B54).withOpacity(0.15), width: 1.5),
               ),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                _TableHeaderCell('序号', width: 60),
-                _TableHeaderCell('姓名', flex: 2),
-                _TableHeaderCell('金额', flex: 2),
-                const _TableHeaderCell('签名', width: 80),
+                _HCell('序号', width: 44),
+                _HCell('姓名', flex: 2),
+                _HCell('金额', flex: 2),
+                _HCell('方式', width: 66),
+                _HCell('备注', flex: 3),
+                _HCell('签名', width: 56),
               ],
             ),
           ),
@@ -220,65 +246,111 @@ class ExportGiftBookScreen extends StatelessWidget {
             final isEven = index % 2 == 0;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isEven ? Colors.white : const Color(0xFFFAF7F2),
-                border: Border(
-                  bottom: BorderSide(color: Colors.brown.withOpacity(0.08)),
-                ),
+                border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.07))),
               ),
               child: Row(
                 children: [
-                  _TableCell('${globalIndex + 1}', width: 60, color: const Color(0xFFB8907A)),
-                  _TableCell(gift.giverName, flex: 2),
-                  _TableCell(currencyFmt.format(gift.amount), flex: 2, isAmount: true),
-                  const _TableCell('', width: 80),
+                  _Cell('${globalIndex + 1}', width: 44, center: true, color: const Color(0xFFB8907A)),
+                  _Cell(gift.giverName, flex: 2),
+                  _Cell(currencyFmt.format(gift.amount), flex: 2, bold: true, color: const Color(0xFFE07B54)),
+                  _Cell(_paymentEmoji(gift.paymentMethod) + gift.paymentMethod, width: 66, center: true, fontSize: 11, color: const Color(0xFF8B6347)),
+                  _Cell(gift.note ?? '', flex: 3, fontSize: 11, color: const Color(0xFF9E8B7D)),
+                  const _Cell('', width: 56),
                 ],
               ),
             );
           }),
 
-          // 空白行（填充到最少15行）
+          // 空白行填充
           ...List.generate(itemsPerPage - pageGifts.length, (i) {
+            final isEven = (pageGifts.length + i) % 2 == 0;
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: (pageGifts.length + i) % 2 == 0 ? Colors.white : const Color(0xFFFAF7F2),
-                border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.08))),
+                color: isEven ? Colors.white : const Color(0xFFFAF7F2),
+                border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.07))),
               ),
               child: Row(
                 children: [
-                  _TableCell('', width: 60),
-                  _TableCell('', flex: 2),
-                  _TableCell('', flex: 2),
-                  const _TableCell('', width: 80),
+                  const _Cell('', width: 44),
+                  const _Cell('', flex: 2),
+                  const _Cell('', flex: 2),
+                  const _Cell('', width: 66),
+                  const _Cell('', flex: 3),
+                  const _Cell('', width: 56),
                 ],
               ),
             );
           }),
+
+          // 备注区域（如果有备注）
+          if (giftsWithNotes.isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE07B54).withOpacity(0.04),
+                border: Border(top: BorderSide(color: const Color(0xFFE07B54).withOpacity(0.12), width: 1)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.note_outlined, size: 13, color: Color(0xFFE07B54)),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '备注',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFE07B54),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ...giftsWithNotes.map((gift) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${gift.giverName}：',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF8B6347)),
+                          ),
+                          Expanded(
+                            child: Text(
+                              gift.note!,
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF9E8B7D)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ],
 
           // 底部汇总
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(top: BorderSide(color: const Color(0xFFE07B54).withOpacity(0.2), width: 2)),
             ),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _SummaryItem(label: '本页笔数', value: '${pageGifts.length}', color: const Color(0xFFE07B54)),
-                    _SummaryItem(label: '本页小计', value: currencyFmt.format(pageTotal), color: const Color(0xFFE07B54)),
-                    _SummaryItem(label: '累计总额', value: currencyFmt.format(totalAmount), color: const Color(0xFFD4603C)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '第 $pageNum / $totalPages 页',
-                  style: TextStyle(fontSize: 11, color: Colors.brown[300]),
-                ),
+                _SummaryItem(label: '本页笔数', value: '${pageGifts.length}', color: const Color(0xFFE07B54)),
+                _SummaryItem(label: '本页小计', value: currencyFmt.format(pageTotal), color: const Color(0xFFE07B54)),
+                _SummaryItem(label: '累计总额', value: currencyFmt.format(totalAmount), color: const Color(0xFFD4603C)),
               ],
             ),
           ),
@@ -286,21 +358,30 @@ class ExportGiftBookScreen extends StatelessWidget {
       ),
     );
   }
+
+  String _paymentEmoji(String method) {
+    return switch (method) {
+      '微信' => '💚 ',
+      '支付宝' => '🔵 ',
+      '银行转账' => '🏦 ',
+      _ => '💵 ',
+    };
+  }
 }
 
-class _TableHeaderCell extends StatelessWidget {
+class _HCell extends StatelessWidget {
   final String text;
   final double? width;
   final int? flex;
 
-  const _TableHeaderCell(this.text, {this.width, this.flex});
+  const _HCell(this.text, {this.width, this.flex});
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
-      fontSize: 14,
+    final style = const TextStyle(
+      fontSize: 13,
       fontWeight: FontWeight.w700,
-      color: const Color(0xFFE07B54),
+      color: Color(0xFFE07B54),
     );
 
     if (width != null) {
@@ -313,30 +394,57 @@ class _TableHeaderCell extends StatelessWidget {
   }
 }
 
-class _TableCell extends StatelessWidget {
+class _Cell extends StatelessWidget {
   final String text;
   final double? width;
   final int? flex;
-  final bool isAmount;
-  final Color? color;
+  final bool center;
+  final bool bold;
+  final double fontSize;
+  final Color color;
 
-  const _TableCell(this.text, {this.width, this.flex, this.isAmount = false, this.color});
+  const _Cell(
+    this.text, {
+    this.width,
+    this.flex,
+    this.center = false,
+    this.bold = false,
+    this.fontSize = 13,
+    this.color = const Color(0xFF5C3D2E),
+  });
 
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
-      fontSize: 14,
-      fontWeight: isAmount ? FontWeight.w600 : FontWeight.normal,
-      color: color ?? (isAmount ? const Color(0xFFE07B54) : const Color(0xFF5C3D2E)),
+      fontSize: fontSize,
+      fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+      color: color,
     );
 
     if (width != null) {
-      return SizedBox(width: width, child: Text(text, textAlign: TextAlign.center, style: style));
+      return SizedBox(
+        width: width,
+        child: Text(
+          text,
+          textAlign: center ? TextAlign.center : TextAlign.start,
+          style: style,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
     }
     if (flex != null) {
-      return Expanded(flex: flex!, child: Text(text, textAlign: TextAlign.center, style: style));
+      return Expanded(
+        flex: flex!,
+        child: Text(
+          text,
+          textAlign: center ? TextAlign.center : TextAlign.start,
+          style: style,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      );
     }
-    return Text(text, textAlign: TextAlign.center, style: style);
+    return Text(text, style: style);
   }
 }
 
@@ -351,9 +459,9 @@ class _SummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.brown[400])),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.brown[400])),
+        const SizedBox(height: 3),
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
       ],
     );
   }
@@ -432,7 +540,7 @@ class _PreviewCard extends StatelessWidget {
                       const Text('点击"分享图片"导出完整礼金本', style: TextStyle(fontSize: 14, color: Color(0xFF8B6347))),
                       const SizedBox(height: 4),
                       Text(
-                        '共 ${gifts.length} 笔记录，自动分页',
+                        '含姓名、金额、支付方式、备注',
                         style: TextStyle(fontSize: 12, color: Colors.brown[300]),
                       ),
                     ],
