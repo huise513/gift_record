@@ -47,9 +47,9 @@ class DbService {
 
   static Future<int> insertGift(GiftEntry gift) async {
     final dbb = await db;
-    // 新记录插入到最前面（sortOrder最小）
-    final minOrder = await dbb.rawQuery('SELECT MIN(sortOrder) as m FROM gifts');
-    final nextOrder = ((minOrder.first['m'] as int?) ?? 0) - 1;
+    // 新记录插入到最后面（sortOrder最大）
+    final maxOrder = await dbb.rawQuery('SELECT MAX(sortOrder) as m FROM gifts');
+    final nextOrder = ((maxOrder.first['m'] as int?) ?? 0) + 1;
     final map = gift.toMap();
     map['sortOrder'] = nextOrder;
     return await dbb.insert('gifts', map);
