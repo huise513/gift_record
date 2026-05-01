@@ -313,6 +313,10 @@ class _GiftListItem extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
       ),
       confirmDismiss: (_) async {
+        // 关闭键盘，确保删除按钮能获得焦点
+        FocusScope.of(context).unfocus();
+        await Future.delayed(const Duration(milliseconds: 30));
+
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(

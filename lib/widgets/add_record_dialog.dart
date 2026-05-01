@@ -67,7 +67,10 @@ class _AddRecordDialogState extends State<AddRecordDialog> {
     // Return result but keep dialog open for fast consecutive entry
     _nameController.clear();
     _amountController.clear();
-    _nameFocus.requestFocus();
+    // 延迟聚焦，等待弹窗重新渲染完成
+    Future.delayed(const Duration(milliseconds: 80), () {
+      _nameFocus.requestFocus();
+    });
 
     Navigator.pop(context, {'name': name, 'amountFen': amountFen});
   }

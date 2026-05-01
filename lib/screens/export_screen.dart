@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
+import 'package:saver_gallery/saver_gallery.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
 
@@ -43,8 +41,8 @@ class ExportGiftBookScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () => _shareImage(context),
-                icon: const Icon(Icons.share),
-                label: const Text('分享图片'),
+                icon: const Icon(Icons.save_alt),
+                label: const Text('保存到相册'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE07B54),
                   foregroundColor: Colors.white,
@@ -73,6 +71,7 @@ class ExportGiftBookScreen extends StatelessWidget {
       final pageController = ScreenshotController();
       final fullImage = _buildFullPage(gifts, currencyFmt, dateFmt, recordsPerPage);
 
+      // 捕获图片（高分辩率，确保完整）
       final image = await pageController.captureFromWidget(
         MediaQuery(
           data: const MediaQueryData(),
@@ -80,15 +79,30 @@ class ExportGiftBookScreen extends StatelessWidget {
             child: fullImage,
           ),
         ),
-        pixelRatio: 3.0,
-        delay: const Duration(milliseconds: 200),
+        pixelRatio: 4.0,
+        delay: const Duration(milliseconds: 300),
       );
 
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/gift_book.png');
-      await file.writeAsBytes(image);
+      // 保存到相册
+      final result = await SaverGallery.saveImage(
+        image,
+        quality: 100,
+        fileName: '礼簿_${DateTime.now().millisecondsSinceEpoch}',
+        skipIfExists: false,
+      );
 
-      await Share.shareXFiles([XFile(file.path)], text: '礼金本（共${gifts.length}条记录）');
+      if (context.mounted) {
+        if (result.isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('已保存到相册')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('保存失败: ${result.errorMessage}')),
+          );
+        }
+      }
     } catch (e) {
       debugPrint('Capture failed: $e');
       if (context.mounted) {
