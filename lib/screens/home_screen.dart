@@ -314,26 +314,35 @@ class _GiftListItem extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
       ),
       confirmDismiss: (_) async {
-        // 用 addPostFrameCallback 确保弹窗完全出现在下一个合成帧
+        // 使用 addPostFrameCallback + 延迟确保弹窗完全出现在下一个合成帧
         final confirmed = await Future(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await Future<void>.delayed(const Duration(milliseconds: 60));
           return showDialog<bool>(
             context: context,
             barrierDismissible: false,
-            builder: (ctx) => AlertDialog(
-              title: const Text('删除'),
-              content: Text('删除"${gift.giverName}"的记录？'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('删除', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
+            builder: (ctx) {
+              // 弹窗显示后主动将焦点移到"删除"按钮
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Future.delayed(const Duration(milliseconds: 30), () {
+                  FocusScope.of(ctx).requestFocus();
+                });
+              });
+              return AlertDialog(
+                title: const Text('删除'),
+                content: Text('删除"${gift.giverName}"的记录？'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    autofocus: true,
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('删除', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              );
+            },
           );
         });
         if (confirmed == true) onDelete();
