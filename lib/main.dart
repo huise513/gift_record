@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/gift_books_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +19,7 @@ class GiftRecordApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Microsoft YaHei',
       ),
-      home: const HomeScreen(),
+      home: const GiftBooksScreen(),
     );
   }
 }

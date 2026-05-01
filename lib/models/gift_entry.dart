@@ -1,5 +1,6 @@
 class GiftEntry {
   final int? id;
+  final int eventId; // 所属礼金本ID
   final String giverName;
   final double amount;
   final String paymentMethod;
@@ -9,6 +10,7 @@ class GiftEntry {
 
   GiftEntry({
     this.id,
+    required this.eventId,
     required this.giverName,
     required this.amount,
     this.paymentMethod = '现金',
@@ -19,6 +21,7 @@ class GiftEntry {
 
   GiftEntry copyWith({
     int? id,
+    int? eventId,
     String? giverName,
     double? amount,
     String? paymentMethod,
@@ -28,6 +31,7 @@ class GiftEntry {
   }) {
     return GiftEntry(
       id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
       giverName: giverName ?? this.giverName,
       amount: amount ?? this.amount,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -40,6 +44,7 @@ class GiftEntry {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'event_id': eventId,
       'giverName': giverName,
       'amount': amount,
       'paymentMethod': paymentMethod,
@@ -52,6 +57,7 @@ class GiftEntry {
   factory GiftEntry.fromMap(Map<String, dynamic> map) {
     return GiftEntry(
       id: map['id'] as int?,
+      eventId: map['event_id'] as int,
       giverName: map['giverName'] as String,
       amount: (map['amount'] as num).toDouble(),
       paymentMethod: map['paymentMethod'] as String? ?? '现金',
