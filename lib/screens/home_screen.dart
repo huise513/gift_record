@@ -324,6 +324,7 @@ class _GiftListItem extends StatelessWidget {
                 child: const Text('取消'),
               ),
               TextButton(
+                autofocus: true,
                 onPressed: () => Navigator.pop(ctx, true),
                 child: const Text('删除', style: TextStyle(color: Colors.red)),
               ),

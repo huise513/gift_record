@@ -80,8 +80,8 @@ class ExportGiftBookScreen extends StatelessWidget {
             child: fullImage,
           ),
         ),
-        pixelRatio: 2.5,
-        delay: const Duration(milliseconds: 100),
+        pixelRatio: 3.0,
+        delay: const Duration(milliseconds: 200),
       );
 
       final directory = await getTemporaryDirectory();
@@ -195,8 +195,8 @@ class ExportGiftBookScreen extends StatelessWidget {
               children: [
                 _HCell('序号', width: 40),
                 _HCell('姓名', flex: 2),
-                _HCell('金额', flex: 3),
-                _HCell('备注', flex: 3),
+                _HCell('金额', flex: 4),
+                _HCell('备注', flex: 2),
               ],
             ),
           ),
@@ -227,8 +227,8 @@ class ExportGiftBookScreen extends StatelessWidget {
                       children: [
                         _Cell('${globalIndex + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
                         _Cell(gift.giverName, flex: 2),
-                        _Cell(_formatAmount(currencyFmt, gift), flex: 3),
-                        _Cell(gift.note ?? '', flex: 3, fontSize: 11, color: const Color(0xFF9E8B7D)),
+                        _Cell(_formatAmount(currencyFmt, gift), flex: 4),
+                        _Cell(gift.note ?? '', flex: 2, fontSize: 11, color: const Color(0xFF9E8B7D)),
                       ],
                     ),
                   );
@@ -248,8 +248,8 @@ class ExportGiftBookScreen extends StatelessWidget {
                         children: [
                           _Cell('', width: 40),
                           _Cell('', flex: 2),
-                          _Cell('', flex: 3),
-                          _Cell('', flex: 3),
+                          _Cell('', flex: 4),
+                          _Cell('', flex: 2),
                         ],
                       ),
                     );
@@ -594,8 +594,8 @@ class _PreviewCard extends StatelessWidget {
             children: [
               _PHCell('序号', width: 40),
               _PHCell('姓名', flex: 2),
-              _PHCell('金额', flex: 3),
-              _PHCell('备注', flex: 3),
+              _PHCell('金额', flex: 4),
+              _PHCell('备注', flex: 2),
             ],
           ),
         ),
@@ -648,8 +648,8 @@ class _PreviewCard extends StatelessWidget {
                           children: [
                             _PCell('${globalIndex + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
                             _PCell(gift.giverName, flex: 2),
-                            _PCell(_formatAmount(currencyFmt, gift), flex: 3),
-                            _PCell(gift.note ?? '', flex: 3, fontSize: 11, color: const Color(0xFF9E8B7D)),
+                            _PCell(_formatAmount(currencyFmt, gift), flex: 4),
+                            _PCell(gift.note ?? '', flex: 2, fontSize: 11, color: const Color(0xFF9E8B7D)),
                           ],
                         ),
                       );
