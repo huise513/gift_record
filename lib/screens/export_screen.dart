@@ -1,10 +1,12 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:screenshot/screenshot.dart';
-import 'package:saver_gallery/saver_gallery.dart';
+import 'package:flutter/rendering.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
 
-class ExportGiftBookScreen extends StatelessWidget {
+class ExportGiftBookScreen extends StatefulWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
   final int recordsPerPage;
@@ -15,6 +17,13 @@ class ExportGiftBookScreen extends StatelessWidget {
     required this.totalAmount,
     this.recordsPerPage = 14,
   });
+
+  @override
+  State<ExportGiftBookScreen> createState() => _ExportGiftBookScreenState();
+}
+
+class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
+  final GlobalKey _repaintKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +40,7 @@ class ExportGiftBookScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: _PreviewCard(gifts: gifts, totalAmount: totalAmount, recordsPerPage: recordsPerPage),
+              child: _PreviewCard(gifts: widget.gifts, totalAmount: widget.totalAmount, recordsPerPage: widget.recordsPerPage),
             ),
           ),
           Container(
@@ -40,7 +49,7 @@ class ExportGiftBookScreen extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _shareImage(context),
+                onPressed: () => _shareImage(context, _repaintKey),
                 icon: const Icon(Icons.save_alt),
                 label: const Text('保存到相册'),
                 style: ElevatedButton.styleFrom(
@@ -59,7 +68,7 @@ class ExportGiftBookScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _shareImage(BuildContext context) async {
+  Future<void> _shareImage(BuildContext context, GlobalKey repaintKey) async {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
     final dateFmt = DateFormat('yyyy年MM月dd日');
 
@@ -68,38 +77,32 @@ class ExportGiftBookScreen extends StatelessWidget {
     );
 
     try {
-      final pageController = ScreenshotController();
-      final fullImage = _buildFullPage(gifts, currencyFmt, dateFmt, recordsPerPage);
+      // 等待一帧，确保 widget 完全渲染
+      await Future.delayed(const Duration(milliseconds: 100));
 
-      // 捕获图片（高分辩率，确保完整）
-      final image = await pageController.captureFromWidget(
-        MediaQuery(
-          data: const MediaQueryData(),
-          child: Material(
-            child: fullImage,
-          ),
-        ),
-        pixelRatio: 4.0,
-        delay: const Duration(milliseconds: 300),
-      );
+      final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) throw Exception('无法获取渲染边界');
 
-      // 保存到相册
-      final result = await SaverGallery.saveImage(
-        image,
+      // 分辨率提高到 4.0
+      final image = await boundary.toImage(pixelRatio: 4.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) throw Exception('图片转换失败');
+
+      final result = await ImageGallerySaverPlus.saveImage(
+        byteData.buffer.asUint8List(),
         quality: 100,
-        fileName: '礼簿_${DateTime.now().millisecondsSinceEpoch}',
-        skipIfExists: false,
+        name: '礼簿_${DateTime.now().millisecondsSinceEpoch}',
       );
 
       if (context.mounted) {
-        if (result.isSuccess) {
+        if (result['isSuccess'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('已保存到相册')),
           );
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('保存失败: ${result.errorMessage}')),
+            SnackBar(content: Text('保存失败: ${result['errorMessage']}')),
           );
         }
       }
@@ -107,7 +110,7 @@ class ExportGiftBookScreen extends StatelessWidget {
       debugPrint('Capture failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('生成失败，请重试')),
+          SnackBar(content: Text('生成失败: $e')),
         );
       }
     }
@@ -509,22 +512,35 @@ class _SummaryItem extends StatelessWidget {
 
 // ─── 预览卡片（与导出图片完全一致的布局）────────────────────────────────────
 
-class _PreviewCard extends StatelessWidget {
+class _PreviewCard extends StatefulWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
   final int recordsPerPage;
 
-  const _PreviewCard({required this.gifts, required this.totalAmount, this.recordsPerPage = 14});
+  const _PreviewCard({
+    required this.gifts,
+    required this.totalAmount,
+    this.recordsPerPage = 14,
+  });
+
+  @override
+  State<_PreviewCard> createState() => _PreviewCardState();
+}
+
+class _PreviewCardState extends State<_PreviewCard> {
+  final GlobalKey _repaintKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
     final dateFmt = DateFormat('yyyy年MM月dd日');
-    final pageCount = (gifts.length / recordsPerPage).ceil();
+    final pageCount = (widget.gifts.length / widget.recordsPerPage).ceil();
 
-    return Column(
-      children: [
-        // 头部
+    return RepaintBoundary(
+      key: _repaintKey,
+      child: Column(
+        children: [
+          // 头部
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
@@ -570,7 +586,7 @@ class _PreviewCard extends StatelessWidget {
                     children: [
                       Text('总笔数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                       const SizedBox(height: 2),
-                      Text('${gifts.length}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                      Text('${widget.gifts.length}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                     ],
                   ),
                   Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
@@ -578,7 +594,7 @@ class _PreviewCard extends StatelessWidget {
                     children: [
                       Text('礼金总额', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                       const SizedBox(height: 2),
-                      Text(currencyFmt.format(totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                      Text(currencyFmt.format(widget.totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
                     ],
                   ),
                   Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
@@ -618,9 +634,9 @@ class _PreviewCard extends StatelessWidget {
 
         // 全部记录（按页分组，与导出图片完全一致）
         ...List.generate(pageCount, (pageIndex) {
-          final startIdx = pageIndex * recordsPerPage;
-          final endIdx = (startIdx + recordsPerPage).clamp(0, gifts.length);
-          final pageGifts = gifts.sublist(startIdx, endIdx);
+          final startIdx = pageIndex * widget.recordsPerPage;
+          final endIdx = (startIdx + widget.recordsPerPage).clamp(0, widget.gifts.length);
+          final pageGifts = widget.gifts.sublist(startIdx, endIdx);
 
           return Column(
             children: [
@@ -712,14 +728,15 @@ class _PreviewCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _SummaryCol(label: '总笔数', value: '${gifts.length}', color: const Color(0xFFE07B54)),
-              _SummaryCol(label: '礼金总额', value: currencyFmt.format(totalAmount), color: const Color(0xFFE07B54)),
-              _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(gifts, '现金'))),
-              _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(gifts, '微信'))),
+              _SummaryCol(label: '总笔数', value: '${widget.gifts.length}', color: const Color(0xFFE07B54)),
+              _SummaryCol(label: '礼金总额', value: currencyFmt.format(widget.totalAmount), color: const Color(0xFFE07B54)),
+              _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(widget.gifts, '现金'))),
+              _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(widget.gifts, '微信'))),
             ],
           ),
         ),
       ],
+      ),
     );
   }
 

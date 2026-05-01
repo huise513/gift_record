@@ -110,6 +110,12 @@
       "languageVersion": "3.10"
     },
     {
+      "name": "image_gallery_saver_plus",
+      "rootUri": "file:///home/huise/.pub-cache/hosted/pub.flutter-io.cn/image_gallery_saver_plus-4.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "intl",
       "rootUri": "file:///home/huise/.pub-cache/hosted/pub.flutter-io.cn/intl-0.20.2",
       "packageUri": "lib/",

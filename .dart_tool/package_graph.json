@@ -9,6 +9,7 @@
       "dependencies": [
         "cupertino_icons",
         "flutter",
+        "image_gallery_saver_plus",
         "intl",
         "path",
         "path_provider",
@@ -44,6 +45,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "image_gallery_saver_plus",
+      "version": "4.0.1",
+      "dependencies": [
+        "flutter"
       ]
     },
     {
