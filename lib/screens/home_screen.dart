@@ -101,71 +101,47 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateFormat('yyyy年MM月dd日').format(DateTime.now()),
-                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '礼金本',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 6,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 导出按钮放在顶部
-          _ExportButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ExportGiftBookScreen(
-                    gifts: _gifts,
-                    totalAmount: _totalAmount,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 12),
-          Column(
+          // 第一行：日期 + 导出按钮（不换行）
+          Row(
             children: [
               Text(
-                '${_gifts.length}',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                DateFormat('yyyy年MM月dd日').format(DateTime.now()),
+                style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.7)),
               ),
-              Text(
-                '笔',
-                style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65)),
-              ),
+              const Spacer(),
+              _ExportButton(onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExportGiftBookScreen(
+                      gifts: _gifts,
+                      totalAmount: _totalAmount,
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
-          Container(
-            width: 1,
-            height: 36,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            color: Colors.white.withOpacity(0.3),
-          ),
-          Column(
+          const SizedBox(height: 6),
+          // 第二行：标题 + 统计
+          Row(
             children: [
-              Text(
-                currencyFmt.format(_totalAmount),
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFFFE066)),
+              const Text(
+                '礼金本',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 6,
+                ),
               ),
+              const SizedBox(width: 16),
               Text(
-                '合计',
-                style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65)),
+                '${_gifts.length}笔  ${currencyFmt.format(_totalAmount)}',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
               ),
             ],
           ),
