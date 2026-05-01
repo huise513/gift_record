@@ -9,11 +9,13 @@ import '../models/gift_entry.dart';
 class ExportGiftBookScreen extends StatelessWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
+  final int recordsPerPage;
 
   const ExportGiftBookScreen({
     super.key,
     required this.gifts,
     required this.totalAmount,
+    this.recordsPerPage = 14,
   });
 
   @override
@@ -31,7 +33,7 @@ class ExportGiftBookScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: _PreviewCard(gifts: gifts, totalAmount: totalAmount),
+              child: _PreviewCard(gifts: gifts, totalAmount: totalAmount, recordsPerPage: recordsPerPage),
             ),
           ),
           Container(
@@ -69,7 +71,7 @@ class ExportGiftBookScreen extends StatelessWidget {
 
     try {
       final pageController = ScreenshotController();
-      final fullImage = _buildFullPage(gifts, currencyFmt, dateFmt);
+      final fullImage = _buildFullPage(gifts, currencyFmt, dateFmt, recordsPerPage);
 
       final image = await pageController.captureFromWidget(
         MediaQuery(
@@ -101,10 +103,11 @@ class ExportGiftBookScreen extends StatelessWidget {
     List<GiftEntry> allGifts,
     NumberFormat currencyFmt,
     DateFormat dateFmt,
+    int recordsPerPage,
   ) {
     final giftsWithNotes = allGifts.where((g) => g.note != null && g.note!.isNotEmpty).toList();
     final pageTotal = allGifts.fold(0.0, (sum, g) => sum + g.amount);
-    final pageCount = (allGifts.length / 12).ceil();
+    final pageCount = (allGifts.length / recordsPerPage).ceil();
 
     return Container(
       width: 600,
@@ -179,9 +182,6 @@ class ExportGiftBookScreen extends StatelessWidget {
             ),
           ),
 
-          // 支付方式统计（仅多种方式时显示）
-          _buildPaymentSummary(allGifts, currencyFmt),
-
           // 表头 - 固定列宽
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -203,8 +203,8 @@ class ExportGiftBookScreen extends StatelessWidget {
 
           // 按页分组的记录
           ...List.generate(pageCount, (pageIndex) {
-            final startIdx = pageIndex * 12;
-            final endIdx = (startIdx + 12).clamp(0, allGifts.length);
+            final startIdx = pageIndex * recordsPerPage;
+            final endIdx = (startIdx + recordsPerPage).clamp(0, allGifts.length);
             final pageGifts = allGifts.sublist(startIdx, endIdx);
 
             return Column(
@@ -235,8 +235,8 @@ class ExportGiftBookScreen extends StatelessWidget {
                 }),
 
                 // 空白行填充
-                if (pageIndex == pageCount - 1 && pageGifts.length < 12)
-                  ...List.generate(12 - pageGifts.length, (i) {
+                if (pageIndex == pageCount - 1 && pageGifts.length < recordsPerPage)
+                  ...List.generate(recordsPerPage - pageGifts.length, (i) {
                     final isEven = (pageGifts.length + i) % 2 == 0;
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -347,7 +347,6 @@ class ExportGiftBookScreen extends StatelessWidget {
                 _SummaryItem(label: '礼金总额', value: currencyFmt.format(pageTotal), color: const Color(0xFFE07B54)),
                 _SummaryItem(label: '现金', value: currencyFmt.format(_sumByMethod(allGifts, '现金')), color: const Color(0xFF8B6347)),
                 _SummaryItem(label: '微信', value: currencyFmt.format(_sumByMethod(allGifts, '微信')), color: const Color(0xFF4CAF50)),
-                _SummaryItem(label: '支付宝', value: currencyFmt.format(_sumByMethod(allGifts, '支付宝')), color: const Color(0xFF2196F3)),
               ],
             ),
           ),
@@ -357,33 +356,8 @@ class ExportGiftBookScreen extends StatelessWidget {
   }
 
   Widget _buildPaymentSummary(List<GiftEntry> allGifts, NumberFormat currencyFmt) {
-    final cashTotal = _sumByMethod(allGifts, '现金');
-    final wechatTotal = _sumByMethod(allGifts, '微信');
-    final alipayTotal = _sumByMethod(allGifts, '支付宝');
-    final bankTotal = _sumByMethod(allGifts, '银行转账');
-
-    final hasMultiple = [cashTotal, wechatTotal, alipayTotal, bankTotal].where((t) => t > 0).length;
-    if (hasMultiple <= 1) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.08))),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.pie_chart_outline, size: 12, color: Color(0xFFE07B54)),
-          const SizedBox(width: 4),
-          Text('支付方式', style: TextStyle(fontSize: 10, color: Colors.brown[400], fontWeight: FontWeight.w500)),
-          const SizedBox(width: 8),
-          if (cashTotal > 0) _PaymentChip(label: '现金', amount: currencyFmt.format(cashTotal)),
-          if (wechatTotal > 0) _PaymentChip(label: '微信', amount: currencyFmt.format(wechatTotal)),
-          if (alipayTotal > 0) _PaymentChip(label: '支付宝', amount: currencyFmt.format(alipayTotal)),
-          if (bankTotal > 0) _PaymentChip(label: '银行转账', amount: currencyFmt.format(bankTotal)),
-        ],
-      ),
-    );
+    // 已禁用，顶部支付方式统计已移除
+    return const SizedBox.shrink();
   }
 
   String _formatAmount(NumberFormat currencyFmt, GiftEntry gift) {
@@ -524,14 +498,15 @@ class _SummaryItem extends StatelessWidget {
 class _PreviewCard extends StatelessWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
+  final int recordsPerPage;
 
-  const _PreviewCard({required this.gifts, required this.totalAmount});
+  const _PreviewCard({required this.gifts, required this.totalAmount, this.recordsPerPage = 14});
 
   @override
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
     final dateFmt = DateFormat('yyyy年MM月dd日');
-    final pageCount = (gifts.length / 12).ceil();
+    final pageCount = (gifts.length / recordsPerPage).ceil();
 
     return Column(
       children: [
@@ -608,11 +583,6 @@ class _PreviewCard extends StatelessWidget {
 
         const SizedBox(height: 8),
 
-        // 支付方式统计
-        _PreviewPaymentSummary(gifts: gifts, currencyFmt: currencyFmt),
-
-        const SizedBox(height: 8),
-
         // 表头
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -634,8 +604,8 @@ class _PreviewCard extends StatelessWidget {
 
         // 全部记录（按页分组，与导出图片完全一致）
         ...List.generate(pageCount, (pageIndex) {
-          final startIdx = pageIndex * 12;
-          final endIdx = (startIdx + 12).clamp(0, gifts.length);
+          final startIdx = pageIndex * recordsPerPage;
+          final endIdx = (startIdx + recordsPerPage).clamp(0, gifts.length);
           final pageGifts = gifts.sublist(startIdx, endIdx);
 
           return Column(
@@ -732,7 +702,6 @@ class _PreviewCard extends StatelessWidget {
               _SummaryCol(label: '礼金总额', value: currencyFmt.format(totalAmount), color: const Color(0xFFE07B54)),
               _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(gifts, '现金'))),
               _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(gifts, '微信'))),
-              _SummaryCol(label: '支付宝', value: currencyFmt.format(_sumByMethod(gifts, '支付宝'))),
             ],
           ),
         ),
@@ -741,33 +710,8 @@ class _PreviewCard extends StatelessWidget {
   }
 
   Widget _PreviewPaymentSummary({required List<GiftEntry> gifts, required NumberFormat currencyFmt}) {
-    final cashTotal = _sumByMethod(gifts, '现金');
-    final wechatTotal = _sumByMethod(gifts, '微信');
-    final alipayTotal = _sumByMethod(gifts, '支付宝');
-    final bankTotal = _sumByMethod(gifts, '银行转账');
-
-    final hasMultiple = [cashTotal, wechatTotal, alipayTotal, bankTotal].where((t) => t > 0).length;
-    if (hasMultiple <= 1) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.pie_chart_outline, size: 12, color: Color(0xFFE07B54)),
-          const SizedBox(width: 4),
-          Text('支付方式', style: TextStyle(fontSize: 10, color: Colors.brown[400], fontWeight: FontWeight.w500)),
-          const SizedBox(width: 8),
-          if (cashTotal > 0) _PreviewChip(label: '现金', amount: currencyFmt.format(cashTotal)),
-          if (wechatTotal > 0) _PreviewChip(label: '微信', amount: currencyFmt.format(wechatTotal)),
-          if (alipayTotal > 0) _PreviewChip(label: '支付宝', amount: currencyFmt.format(alipayTotal)),
-          if (bankTotal > 0) _PreviewChip(label: '银行转账', amount: currencyFmt.format(bankTotal)),
-        ],
-      ),
-    );
+    // 已禁用，预览界面支付方式统计已移除
+    return const SizedBox.shrink();
   }
 
   String _formatAmount(NumberFormat currencyFmt, GiftEntry gift) {

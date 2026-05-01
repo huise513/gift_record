@@ -64,9 +64,7 @@ class GiftEntry {
 
 enum PaymentMethod {
   cash('现金'),
-  wechat('微信'),
-  alipay('支付宝'),
-  bank('银行转账');
+  wechat('微信');
 
   final String label;
 
