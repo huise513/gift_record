@@ -543,211 +543,209 @@ class _PreviewCardState extends State<_PreviewCard> {
 
     return RepaintBoundary(
       key: widget.repaintKey,
-      child: Column(
-        children: [
-          // 头部
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Container(
+        color: const Color(0xFFFAF7F2),
+        child: Column(
+          children: [
+            // 头部
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
                 children: [
-                  const Text(
-                    '礼 金 本',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 4,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '礼 金 本',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          dateFmt.format(DateTime.now()),
+                          style: const TextStyle(fontSize: 10, color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      dateFmt.format(DateTime.now()),
-                      style: const TextStyle(fontSize: 10, color: Colors.white),
-                    ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Text('总笔数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text('${widget.gifts.length}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ],
+                      ),
+                      Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
+                      Column(
+                        children: [
+                          Text('礼金总额', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text(currencyFmt.format(widget.totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                        ],
+                      ),
+                      Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
+                      Column(
+                        children: [
+                          Text('记录页数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text('$pageCount', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Row(
+            ),
+
+            const SizedBox(height: 8),
+
+            // 表头
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE07B54).withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                children: [
+                  _PHCell('序号', width: 40),
+                  _PHCell('姓名', flex: 2),
+                  _PHCell('金额', flex: 4),
+                  _PHCell('备注', flex: 2),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            // 全部记录（按页分组，与导出图片完全一致）
+            ...List.generate(pageCount, (pageIndex) {
+              final startIdx = pageIndex * widget.recordsPerPage;
+              final endIdx = (startIdx + widget.recordsPerPage).clamp(0, widget.gifts.length);
+              final pageGifts = widget.gifts.sublist(startIdx, endIdx);
+
+              return Column(
+                children: [
+                  // 记录列表
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
+                        bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : const Radius.circular(0),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.brown.withOpacity(0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
+                        bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
+                      ),
+                      child: Column(
+                        children: pageGifts.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final gift = entry.value;
+                          final globalIndex = startIdx + index;
+                          final isEven = index % 2 == 0;
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                            decoration: BoxDecoration(
+                              color: isEven ? Colors.white : const Color(0xFFFAF7F2),
+                              border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.06))),
+                            ),
+                            child: Row(
+                              children: [
+                                _PCell('${globalIndex + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
+                                _PCell(gift.giverName, flex: 2),
+                                _PCell(_formatAmount(currencyFmt, gift), flex: 4),
+                                _PCell(gift.note ?? '', flex: 2, fontSize: 11, color: const Color(0xFF9E8B7D)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+
+                  // 页脚
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE07B54).withOpacity(0.03),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '第 ${pageIndex + 1} / $pageCount 页',
+                          style: TextStyle(fontSize: 10, color: Colors.brown[300]),
+                        ),
+                        Text(
+                          '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
+                          style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+                ],
+              );
+            }),
+
+            // 底部汇总
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Column(
-                    children: [
-                      Text('总笔数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
-                      const SizedBox(height: 2),
-                      Text('${widget.gifts.length}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
-                  Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
-                  Column(
-                    children: [
-                      Text('礼金总额', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
-                      const SizedBox(height: 2),
-                      Text(currencyFmt.format(widget.totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
-                    ],
-                  ),
-                  Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
-                  Column(
-                    children: [
-                      Text('记录页数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
-                      const SizedBox(height: 2),
-                      Text('$pageCount', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
+                  _SummaryCol(label: '总笔数', value: '${widget.gifts.length}', color: const Color(0xFFE07B54)),
+                  _SummaryCol(label: '礼金总额', value: currencyFmt.format(widget.totalAmount), color: const Color(0xFFE07B54)),
+                  _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(widget.gifts, '现金'))),
+                  _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(widget.gifts, '微信'))),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-
-        const SizedBox(height: 8),
-
-        // 表头
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE07B54).withOpacity(0.06),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Row(
-            children: [
-              _PHCell('序号', width: 40),
-              _PHCell('姓名', flex: 2),
-              _PHCell('金额', flex: 4),
-              _PHCell('备注', flex: 2),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 4),
-
-        // 全部记录（按页分组，与导出图片完全一致）
-        ...List.generate(pageCount, (pageIndex) {
-          final startIdx = pageIndex * widget.recordsPerPage;
-          final endIdx = (startIdx + widget.recordsPerPage).clamp(0, widget.gifts.length);
-          final pageGifts = widget.gifts.sublist(startIdx, endIdx);
-
-          return Column(
-            children: [
-              // 记录列表
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
-                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : const Radius.circular(0),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.brown.withOpacity(0.04),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(
-                    top: pageIndex == 0 ? const Radius.circular(10) : Radius.zero,
-                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
-                  ),
-                  child: Column(
-                    children: pageGifts.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final gift = entry.value;
-                      final globalIndex = startIdx + index;
-                      final isEven = index % 2 == 0;
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: isEven ? Colors.white : const Color(0xFFFAF7F2),
-                          border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.06))),
-                        ),
-                        child: Row(
-                          children: [
-                            _PCell('${globalIndex + 1}', width: 40, center: true, color: const Color(0xFFB8907A)),
-                            _PCell(gift.giverName, flex: 2),
-                            _PCell(_formatAmount(currencyFmt, gift), flex: 4),
-                            _PCell(gift.note ?? '', flex: 2, fontSize: 11, color: const Color(0xFF9E8B7D)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-
-              // 页脚
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE07B54).withOpacity(0.03),
-                  borderRadius: BorderRadius.vertical(
-                    bottom: pageIndex == pageCount - 1 ? const Radius.circular(10) : Radius.zero,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '第 ${pageIndex + 1} / $pageCount 页',
-                      style: TextStyle(fontSize: 10, color: Colors.brown[300]),
-                    ),
-                    Text(
-                      '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
-                      style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 8),
-            ],
-          );
-        }),
-
-        // 底部汇总
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _SummaryCol(label: '总笔数', value: '${widget.gifts.length}', color: const Color(0xFFE07B54)),
-              _SummaryCol(label: '礼金总额', value: currencyFmt.format(widget.totalAmount), color: const Color(0xFFE07B54)),
-              _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(widget.gifts, '现金'))),
-              _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(widget.gifts, '微信'))),
-            ],
-          ),
-        ),
-      ],
       ),
     );
-  }
-
-  Widget _PreviewPaymentSummary({required List<GiftEntry> gifts, required NumberFormat currencyFmt}) {
-    // 已禁用，预览界面支付方式统计已移除
-    return const SizedBox.shrink();
   }
 
   String _formatAmount(NumberFormat currencyFmt, GiftEntry gift) {
