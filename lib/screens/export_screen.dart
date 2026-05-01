@@ -210,29 +210,6 @@ class ExportGiftBookScreen extends StatelessWidget {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 页眉（第一页之后显示）
-                if (pageIndex > 0)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
-                    color: const Color(0xFFE07B54).withOpacity(0.04),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.subdirectory_arrow_right, size: 12, color: Color(0xFFE07B54)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '第 ${pageIndex + 1} 页（续）',
-                          style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54), fontWeight: FontWeight.w500),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
-                          style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
-                        ),
-                      ],
-                    ),
-                  ),
-
                 // 记录行
                 ...pageGifts.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -663,32 +640,6 @@ class _PreviewCard extends StatelessWidget {
 
           return Column(
             children: [
-              // 页眉
-              if (pageIndex > 0)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE07B54).withOpacity(0.04),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.subdirectory_arrow_right, size: 12, color: Color(0xFFE07B54)),
-                      const SizedBox(width: 4),
-                      Text(
-                        '第 ${pageIndex + 1} 页（续）',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54), fontWeight: FontWeight.w500),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
-                      ),
-                    ],
-                  ),
-                ),
-
               // 记录列表
               Container(
                 decoration: BoxDecoration(

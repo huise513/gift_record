@@ -38,8 +38,8 @@ class DbService {
         }
         if (oldVersion < 3) {
           await db.execute("ALTER TABLE gifts ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0");
-          // 初始化已有数据的sortOrder为createdAt倒序
-          await db.execute('UPDATE gifts SET sortOrder = (SELECT MAX(createdAt) FROM gifts) - createdAt');
+          // 初始化已有数据的sortOrder为createdAt正序（先录入的序号小）
+          await db.execute('UPDATE gifts SET sortOrder = createdAt');
         }
       },
     );
