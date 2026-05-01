@@ -35,28 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _deleteGift(GiftEntry gift) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('删除'),
-        content: Text('删除"${gift.giverName}"的记录？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('删除', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+    await DbService.deleteGift(gift.id!);
+    _loadGifts();
+  }
 
-    if (confirmed == true) {
-      await DbService.deleteGift(gift.id!);
-      _loadGifts();
-    }
+  Future<void> _undoDeleteGift(GiftEntry gift) async {
+    await DbService.restoreGift(gift);
+    _loadGifts();
   }
 
   @override
@@ -231,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
               currencyFmt: currencyFmt,
               onTap: () => _showEditDialog(gift),
               onDelete: () => _deleteGift(gift),
+              onUndo: () => _undoDeleteGift(gift),
             );
           },
         ),
@@ -291,6 +277,7 @@ class _GiftListItem extends StatelessWidget {
   final NumberFormat currencyFmt;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback onUndo;
 
   const _GiftListItem({
     super.key,
@@ -298,6 +285,7 @@ class _GiftListItem extends StatelessWidget {
     required this.currencyFmt,
     required this.onTap,
     required this.onDelete,
+    required this.onUndo,
   });
 
   @override
@@ -313,40 +301,20 @@ class _GiftListItem extends StatelessWidget {
         color: Colors.red[50],
         child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
       ),
-      confirmDismiss: (_) async {
-        // 使用 addPostFrameCallback + 延迟确保弹窗完全出现在下一个合成帧
-        final confirmed = await Future(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 60));
-          return showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            builder: (ctx) {
-              // 弹窗显示后主动将焦点移到"删除"按钮
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Future.delayed(const Duration(milliseconds: 30), () {
-                  FocusScope.of(ctx).requestFocus();
-                });
-              });
-              return AlertDialog(
-                title: const Text('删除'),
-                content: Text('删除"${gift.giverName}"的记录？'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    autofocus: true,
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('删除', style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              );
-            },
-          );
-        });
-        if (confirmed == true) onDelete();
-        return false;
+      onDismissed: (_) {
+        // 滑动结束后直接删除，显示撤销提示
+        // 在 onDismissed 时 context 还在 tree 中，可以安全获取 ScaffoldMessenger
+        onDelete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('已删除 "${gift.giverName}" 的记录'),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: '撤销',
+              onPressed: onUndo,
+            ),
+          ),
+        );
       },
       child: ListTile(
         onTap: onTap,

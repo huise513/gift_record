@@ -72,6 +72,11 @@ class DbService {
     return await dbb.delete('gifts', where: 'id = ?', whereArgs: [id]);
   }
 
+  static Future<void> restoreGift(GiftEntry gift) async {
+    final dbb = await db;
+    await dbb.insert('gifts', gift.toMap());
+  }
+
   static Future<bool> updateGift(GiftEntry gift) async {
     final dbb = await db;
     final count = await dbb.update(

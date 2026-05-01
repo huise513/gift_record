@@ -23,7 +23,7 @@ class ExportGiftBookScreen extends StatefulWidget {
 }
 
 class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
-  final GlobalKey _repaintKey = GlobalKey();
+  final GlobalKey _screenRepaintKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,12 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: _PreviewCard(gifts: widget.gifts, totalAmount: widget.totalAmount, recordsPerPage: widget.recordsPerPage),
+              child: _PreviewCard(
+                gifts: widget.gifts,
+                totalAmount: widget.totalAmount,
+                recordsPerPage: widget.recordsPerPage,
+                repaintKey: _screenRepaintKey,
+              ),
             ),
           ),
           Container(
@@ -49,7 +54,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _shareImage(context, _repaintKey),
+                onPressed: () => _shareImage(context, _screenRepaintKey),
                 icon: const Icon(Icons.save_alt),
                 label: const Text('保存到相册'),
                 style: ElevatedButton.styleFrom(
@@ -516,11 +521,13 @@ class _PreviewCard extends StatefulWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
   final int recordsPerPage;
+  final GlobalKey repaintKey;
 
   const _PreviewCard({
     required this.gifts,
     required this.totalAmount,
     this.recordsPerPage = 14,
+    required this.repaintKey,
   });
 
   @override
@@ -528,8 +535,6 @@ class _PreviewCard extends StatefulWidget {
 }
 
 class _PreviewCardState extends State<_PreviewCard> {
-  final GlobalKey _repaintKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
@@ -537,7 +542,7 @@ class _PreviewCardState extends State<_PreviewCard> {
     final pageCount = (widget.gifts.length / widget.recordsPerPage).ceil();
 
     return RepaintBoundary(
-      key: _repaintKey,
+      key: widget.repaintKey,
       child: Column(
         children: [
           // 头部
