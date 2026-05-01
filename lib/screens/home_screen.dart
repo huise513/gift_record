@@ -97,32 +97,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5E6D3),
+      backgroundColor: const Color(0xFFFAF7F2),
       body: SafeArea(
         child: Column(
           children: [
-            _buildCover(currencyFmt),
+            _buildHeader(currencyFmt),
             _buildInputArea(),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _gifts.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '暂无记录',
-                                style: TextStyle(fontSize: 16, color: Colors.brown[300]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '输入姓名和金额开始记录',
-                                style: TextStyle(fontSize: 13, color: Colors.brown[200]),
-                              ),
-                            ],
-                          ),
-                        )
+                      ? _buildEmptyState()
                       : _buildGiftList(),
             ),
           ],
@@ -141,79 +126,94 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               },
-              backgroundColor: const Color(0xFF8B0000),
-              icon: const Icon(Icons.image, color: Colors.white),
+              backgroundColor: const Color(0xFFE07B54),
+              icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
               label: const Text('导出礼金本', style: TextStyle(color: Colors.white)),
             )
           : null,
     );
   }
 
-  Widget _buildCover(NumberFormat currencyFmt) {
+  Widget _buildHeader(NumberFormat currencyFmt) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B0000),
-        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: const Color(0xFFE07B54).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  DateFormat('yyyy年 MM月').format(DateTime.now()),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           const Text(
             '礼 金 本',
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFFFD700),
-              letterSpacing: 8,
-              shadows: [
-                Shadow(color: Colors.black26, offset: Offset(1, 1), blurRadius: 2),
-              ],
+              fontSize: 36,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 12,
+              height: 1.2,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            DateFormat('yyyy年').format(DateTime.now()),
-            style: const TextStyle(fontSize: 16, color: Color(0xFFFFD700)),
           ),
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD700).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFFFD700), width: 1),
+              color: Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Text(
-                  '礼金合计',
-                  style: TextStyle(fontSize: 14, color: Color(0xFFFFD700)),
+                _StatColumn(
+                  label: '笔数',
+                  value: '${_gifts.length}',
+                  valueStyle: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  currencyFmt.format(_totalAmount),
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFFFD700),
-                  ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+                _StatColumn(
+                  label: '礼金合计',
+                  value: currencyFmt.format(_totalAmount),
+                  valueStyle: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFFFFE066)),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '共 ${_gifts.length} 笔',
-            style: const TextStyle(fontSize: 14, color: Color(0xFFFFD700)),
           ),
         ],
       ),
@@ -223,57 +223,117 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildInputArea() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.brown.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                hintText: '姓名',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF7F2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      hintText: '请输入姓名',
+                      prefixIcon: Icon(Icons.person_outline, color: Color(0xFFE07B54)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    textInputAction: TextInputAction.next,
+                  ),
+                ),
               ),
-              textInputAction: TextInputAction.next,
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF7F2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    controller: _amountController,
+                    decoration: const InputDecoration(
+                      hintText: '礼金金额',
+                      prefixIcon: Icon(Icons.monetization_on_outlined, color: Color(0xFFE07B54)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _addGift(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _addGift,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE07B54),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_circle_outline),
+                  SizedBox(width: 8),
+                  Text('记礼金', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 1,
-            child: TextField(
-              controller: _amountController,
-              decoration: InputDecoration(
-                hintText: '金额',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _addGift(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE07B54).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(40),
             ),
+            child: const Icon(Icons.card_giftcard, size: 40, color: Color(0xFFE07B54)),
           ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: _addGift,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B0000),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('记礼金'),
+          const SizedBox(height: 16),
+          Text(
+            '暂无礼金记录',
+            style: TextStyle(fontSize: 16, color: Colors.brown[400], fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '输入姓名和金额开始记录',
+            style: TextStyle(fontSize: 13, color: Colors.brown[200]),
           ),
         ],
       ),
@@ -287,57 +347,148 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F0),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.brown.withOpacity(0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: _gifts.length,
-        separatorBuilder: (_, __) => Divider(height: 1, color: Colors.brown.withOpacity(0.1)),
-        itemBuilder: (ctx, index) {
-          final gift = _gifts[index];
-          return ListTile(
-            dense: true,
-            leading: CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFF8B0000).withOpacity(0.1),
-              child: Text(
-                gift.giverName.isNotEmpty ? gift.giverName[0] : '?',
-                style: const TextStyle(
-                  color: Color(0xFF8B0000),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAF7F2),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            title: Text(
-              gift.giverName,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            subtitle: Text(
-              dateFmt.format(gift.createdAt),
-              style: TextStyle(fontSize: 11, color: Colors.brown[300]),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
+                const Icon(Icons.list_alt, size: 18, color: Color(0xFFE07B54)),
+                const SizedBox(width: 8),
                 Text(
-                  currencyFmt.format(gift.amount),
+                  '礼金记录（共 ${_gifts.length} 笔）',
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B0000),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8B6347),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, size: 18, color: Colors.brown[300]),
-                  onPressed: () => _deleteGift(gift),
                 ),
               ],
             ),
-          );
-        },
+          ),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: _gifts.length,
+              separatorBuilder: (_, __) => Divider(height: 1, color: Colors.brown.withOpacity(0.06)),
+              itemBuilder: (ctx, index) {
+                final gift = _gifts[index];
+                return Dismissible(
+                  key: Key('${gift.id}'),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    color: Colors.red[50],
+                    child: const Icon(Icons.delete_outline, color: Colors.red),
+                  ),
+                  confirmDismiss: (_) async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('删除确认'),
+                        content: Text('确定要删除"${gift.giverName}"的记录吗？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('取消'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('删除', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      await DbService.deleteGift(gift.id!);
+                      _loadGifts();
+                    }
+                    return false;
+                  },
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE07B54).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        gift.giverName.isNotEmpty ? gift.giverName[0] : '?',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFE07B54),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      gift.giverName,
+                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                    ),
+                    subtitle: Text(
+                      dateFmt.format(gift.createdAt),
+                      style: TextStyle(fontSize: 11, color: Colors.brown[300]),
+                    ),
+                    trailing: Text(
+                      currencyFmt.format(gift.amount),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE07B54),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _StatColumn extends StatelessWidget {
+  final String label;
+  final String value;
+  final TextStyle valueStyle;
+
+  const _StatColumn({
+    required this.label,
+    required this.value,
+    required this.valueStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+        ),
+        const SizedBox(height: 4),
+        Text(value, style: valueStyle),
+      ],
     );
   }
 }
