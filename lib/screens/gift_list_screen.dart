@@ -38,25 +38,22 @@ class _GiftListScreenState extends State<GiftListScreen> {
   }
 
   Future<void> _deleteGift(GiftEntry gift) async {
-    // 先记录完整数据用于撤销
     final deletedGift = gift;
     await DbService.deleteGift(gift.id!);
+    setState(() {
+      _gifts.removeWhere((g) => g.id == gift.id);
+      _totalAmount = _totalAmount - gift.amount;
+    });
 
-    // 先更新列表
-    setState(() => _gifts.removeWhere((g) => g.id == gift.id));
-    _totalAmount = _totalAmount - gift.amount;
-
-    // 显示3秒撤销提示
     if (mounted) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('已删除 "${gift.giverName}" 的记录'),
+          content: Text('已删除 "${deletedGift.giverName}" 的记录'),
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
             label: '撤销',
             onPressed: () async {
-              // 重新插入
               await DbService.restoreGift(deletedGift);
               _loadGifts();
             },
@@ -68,29 +65,73 @@ class _GiftListScreenState extends State<GiftListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
-
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(currencyFmt),
-            _buildInputArea(),
-            Expanded(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _gifts.isEmpty
-                      ? _buildEmptyState()
-                      : _buildGiftList(),
-            ),
-          ],
+        child: OrientationBuilder(
+          builder: (ctx, orientation) {
+            if (orientation == Orientation.landscape) {
+              return _buildLandscapeLayout();
+            }
+            return _buildPortraitLayout();
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader(NumberFormat currencyFmt) {
+  // 竖屏：上下布局
+  Widget _buildPortraitLayout() {
+    final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
+
+    return Column(
+      children: [
+        _buildHeaderPortrait(currencyFmt),
+        _buildInputArea(),
+        Expanded(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _gifts.isEmpty
+                  ? _buildEmptyState()
+                  : _buildGiftList(),
+        ),
+      ],
+    );
+  }
+
+  // 横屏：左右布局
+  Widget _buildLandscapeLayout() {
+    final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
+
+    return Row(
+      children: [
+        // 左侧：头部统计 + 输入表单
+        Container(
+          width: 260,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildHeaderLandscape(currencyFmt),
+              const SizedBox(height: 12),
+              Expanded(child: _buildInputArea()),
+            ],
+          ),
+        ),
+        // 分隔线
+        Container(width: 1, color: Colors.brown.withOpacity(0.1)),
+        // 右侧：记录列表
+        Expanded(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _gifts.isEmpty
+                  ? _buildEmptyState()
+                  : _buildGiftList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeaderPortrait(NumberFormat currencyFmt) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
@@ -159,6 +200,69 @@ class _GiftListScreenState extends State<GiftListScreen> {
     );
   }
 
+  Widget _buildHeaderLandscape(NumberFormat currencyFmt) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE07B54).withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  widget.bookName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 3,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Spacer(),
+              _ExportButton(onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExportGiftBookScreen(
+                      gifts: _gifts,
+                      totalAmount: _totalAmount,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _LandscapeStatItem(label: '笔数', value: '${_gifts.length}'),
+              Container(width: 1, height: 24, color: Colors.white.withOpacity(0.25)),
+              _LandscapeStatItem(label: '总额', value: currencyFmt.format(_totalAmount), highlight: true),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInputArea() {
     return _AddGiftForm(bookId: widget.bookId, onAdded: () => _loadGifts());
   }
@@ -178,10 +282,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
             child: const Icon(Icons.card_giftcard, size: 32, color: Color(0xFFE07B54)),
           ),
           const SizedBox(height: 12),
-          Text(
-            '暂无记录',
-            style: TextStyle(fontSize: 15, color: Colors.brown[400]),
-          ),
+          Text('暂无记录', style: TextStyle(fontSize: 15, color: Colors.brown[400])),
         ],
       ),
     );
@@ -262,6 +363,36 @@ class _GiftListScreenState extends State<GiftListScreen> {
   }
 }
 
+class _LandscapeStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+
+  const _LandscapeStatItem({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: highlight ? const Color(0xFFFFE066) : Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ExportButton extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -317,7 +448,7 @@ class _GiftListItem extends StatelessWidget {
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         onDelete();
-        return false; // 不真正删除，由SnackBar撤销
+        return false;
       },
       background: Container(
         alignment: Alignment.centerRight,
@@ -348,23 +479,28 @@ class _GiftListItem extends StatelessWidget {
         ),
         title: Row(
           children: [
-            Text(
-              gift.giverName,
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+            Flexible(
+              child: Text(
+                gift.giverName,
+                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             if (gift.note?.isNotEmpty == true) ...[
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE07B54).withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  gift.note!,
-                  style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE07B54).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    gift.note!,
+                    style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],
@@ -799,9 +935,8 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE07B54),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('保存', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),

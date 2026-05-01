@@ -35,10 +35,45 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          Expanded(
+      body: OrientationBuilder(
+        builder: (ctx, orientation) {
+          if (orientation == Orientation.landscape) {
+            return _buildLandscapeBody();
+          }
+          return _buildPortraitBody();
+        },
+      ),
+    );
+  }
+
+  // 竖屏：上下滚动，宽度不限制
+  Widget _buildPortraitBody() {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: _PreviewCard(
+              gifts: widget.gifts,
+              totalAmount: widget.totalAmount,
+              recordsPerPage: widget.recordsPerPage,
+              repaintKey: _screenRepaintKey,
+            ),
+          ),
+        ),
+        _buildSaveButton(),
+      ],
+    );
+  }
+
+  // 横屏：横向滚动，高度限制为屏幕高度，宽度按内容
+  Widget _buildLandscapeBody() {
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
             child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.all(16),
               child: _PreviewCard(
                 gifts: widget.gifts,
@@ -48,27 +83,31 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _shareImage(context, _screenRepaintKey),
-                icon: const Icon(Icons.save_alt),
-                label: const Text('保存到相册'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE07B54),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+        ),
+        _buildSaveButton(),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => _shareImage(context, _screenRepaintKey),
+          icon: const Icon(Icons.save_alt),
+          label: const Text('保存到相册'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE07B54),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

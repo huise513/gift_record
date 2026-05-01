@@ -26,7 +26,6 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
     setState(() => _loading = true);
     await DbService.ensureDefaultBook();
     final books = await DbService.getAllGiftBooks();
-    // 加载每个礼金本的统计数据
     final booksWithStats = await Future.wait(
       books.map((b) async {
         final count = await DbService.getGiftRecordCount(b.id!);
@@ -41,17 +40,25 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
   }
 
   Future<void> _deleteBook(GiftBook book) async {
-    final deleted = await DbService.deleteGiftBook(book.id!);
-    if (deleted > 0) {
-      _loadBooks();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('已删除 "${book.name}"'),
-            duration: const Duration(seconds: 3),
+    final deletedBook = book;
+    await DbService.deleteGiftBook(book.id!);
+    setState(() => _books.removeWhere((b) => b.id == book.id));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已删除 "${deletedBook.name}"'),
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: '撤销',
+            onPressed: () async {
+              final id = await DbService.insertGiftBook(deletedBook);
+              _loadBooks();
+            },
           ),
-        );
-      }
+        ),
+      );
     }
   }
 
@@ -63,7 +70,6 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
       builder: (ctx) => _AddGiftBookSheet(onAdded: (book) {
         Navigator.pop(ctx);
         _loadBooks();
-        // 打开新建的礼金本
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -78,6 +84,8 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
     final dateFmt = DateFormat('yyyy年MM月dd日');
+    final totalRecords = _books.fold<int>(0, (sum, b) => sum + b.recordCount);
+    final totalAmount = _books.fold<double>(0, (sum, b) => sum + b.totalAmount);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
@@ -97,15 +105,200 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _books.isEmpty
-              ? _buildEmptyState()
-              : _buildBooksList(currencyFmt, dateFmt),
+          : OrientationBuilder(
+              builder: (ctx, orientation) {
+                if (orientation == Orientation.landscape) {
+                  return _buildLandscapeLayout(currencyFmt, dateFmt, totalRecords, totalAmount);
+                }
+                return _buildPortraitLayout(currencyFmt, dateFmt, totalRecords, totalAmount);
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         backgroundColor: const Color(0xFFE07B54),
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  // 竖屏：上下布局
+  Widget _buildPortraitLayout(
+    NumberFormat currencyFmt,
+    DateFormat dateFmt,
+    int totalRecords,
+    double totalAmount,
+  ) {
+    if (_books.isEmpty) return _buildEmptyState();
+
+    return Column(
+      children: [
+        _buildStatBar(currencyFmt, totalRecords, totalAmount),
+        Expanded(child: _buildBooksList(currencyFmt, dateFmt)),
+      ],
+    );
+  }
+
+  // 横屏：左右布局
+  Widget _buildLandscapeLayout(
+    NumberFormat currencyFmt,
+    DateFormat dateFmt,
+    int totalRecords,
+    double totalAmount,
+  ) {
+    if (_books.isEmpty) return _buildEmptyState();
+
+    return Row(
+      children: [
+        // 左侧：统计信息
+        Container(
+          width: 220,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildStatCard(currencyFmt, totalRecords, totalAmount),
+              const Spacer(),
+              _buildAddBookButton(),
+            ],
+          ),
+        ),
+        // 分隔线
+        Container(width: 1, color: Colors.brown.withOpacity(0.1)),
+        // 右侧：礼金本列表
+        Expanded(child: _buildBooksList(currencyFmt, dateFmt)),
+      ],
+    );
+  }
+
+  Widget _buildStatBar(NumberFormat currencyFmt, int totalRecords, double totalAmount) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE07B54).withOpacity(0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Column(
+            children: [
+              Text('礼金本', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+              const SizedBox(height: 2),
+              Text('${_books.length}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            ],
+          ),
+          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.25)),
+          Column(
+            children: [
+              Text('总笔数', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+              const SizedBox(height: 2),
+              Text('$totalRecords', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            ],
+          ),
+          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.25)),
+          Column(
+            children: [
+              Text('礼金总额', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+              const SizedBox(height: 2),
+              Text(currencyFmt.format(totalAmount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(NumberFormat currencyFmt, int totalRecords, double totalAmount) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE07B54).withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '我的礼金本',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _LandscapeStatItem(label: '礼金本', value: '${_books.length}'),
+          const SizedBox(height: 10),
+          _LandscapeStatItem(label: '总笔数', value: '$totalRecords'),
+          const SizedBox(height: 10),
+          _LandscapeStatItem(label: '礼金总额', value: currencyFmt.format(totalAmount), highlight: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddBookButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _showAddDialog,
+        icon: const Icon(Icons.add, size: 18),
+        label: const Text('新建礼金本', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFE07B54),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBooksList(NumberFormat currencyFmt, DateFormat dateFmt) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+      itemCount: _books.length,
+      itemBuilder: (ctx, index) {
+        final book = _books[index];
+        return _GiftBookCard(
+          book: book,
+          currencyFmt: currencyFmt,
+          dateFmt: dateFmt,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GiftListScreen(bookId: book.id!, bookName: book.name),
+              ),
+            );
+            _loadBooks();
+          },
+          onDelete: () => _deleteBook(book),
+        );
+      },
     );
   }
 
@@ -124,64 +317,41 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
             child: const Icon(Icons.card_giftcard, size: 40, color: Color(0xFFE07B54)),
           ),
           const SizedBox(height: 16),
-          Text(
-            '暂无礼金本',
-            style: TextStyle(fontSize: 16, color: Colors.brown[400]),
-          ),
+          Text('暂无礼金本', style: TextStyle(fontSize: 16, color: Colors.brown[400])),
           const SizedBox(height: 8),
-          Text(
-            '点击右下角 + 新建一个',
-            style: TextStyle(fontSize: 13, color: Colors.brown[300]),
-          ),
+          Text('点击右下角 + 新建一个', style: TextStyle(fontSize: 13, color: Colors.brown[300])),
         ],
       ),
     );
   }
+}
 
-  Widget _buildBooksList(NumberFormat currencyFmt, DateFormat dateFmt) {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-      itemCount: _books.length,
-      itemBuilder: (ctx, index) {
-        final book = _books[index];
-        return _GiftBookCard(
-          book: book,
-          currencyFmt: currencyFmt,
-          dateFmt: dateFmt,
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => GiftListScreen(bookId: book.id!, bookName: book.name),
-              ),
-            );
-            _loadBooks(); // 返回时刷新（可能有新增记录）
-          },
-          onDelete: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('删除确认'),
-                content: Text('确定要删除 "${book.name}" 吗？该操作不可撤销。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
-                    child: const Text('删除'),
-                  ),
-                ],
-              ),
-            );
-            if (confirmed == true) {
-              await _deleteBook(book);
-            }
-          },
-        );
-      },
+class _LandscapeStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+
+  const _LandscapeStatItem({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: highlight ? const Color(0xFFFFE066) : Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -204,67 +374,66 @@ class _GiftBookCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: Colors.brown.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                // 左侧图标
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFE07B54), Color(0xFFD4603C)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    book.type == GiftBookType.wedding
-                        ? Icons.favorite
-                        : Icons.cake,
+                    book.type == GiftBookType.wedding ? Icons.favorite : Icons.cake,
                     color: Colors.white,
-                    size: 26,
+                    size: 22,
                   ),
                 ),
-                const SizedBox(width: 14),
-                // 中间信息
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            book.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF3D2B1F),
+                          Flexible(
+                            child: Text(
+                              book.name,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF3D2B1F),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE07B54).withOpacity(0.08),
                               borderRadius: BorderRadius.circular(4),
@@ -280,12 +449,12 @@ class _GiftBookCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         dateFmt.format(book.createdAt),
-                        style: TextStyle(fontSize: 11, color: Colors.brown[300]),
+                        style: TextStyle(fontSize: 10, color: Colors.brown[300]),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Row(
                         children: [
                           _StatChip(label: '笔数', value: '${book.recordCount}'),
@@ -300,18 +469,17 @@ class _GiftBookCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // 右侧操作
                 Column(
                   children: [
                     IconButton(
                       onPressed: onTap,
-                      icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                      icon: const Icon(Icons.arrow_forward_ios, size: 14),
                       color: Colors.brown[200],
                       visualDensity: VisualDensity.compact,
                     ),
                     IconButton(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline, size: 18),
+                      icon: const Icon(Icons.delete_outline, size: 16),
                       color: Colors.red[200],
                       visualDensity: VisualDensity.compact,
                     ),
@@ -331,20 +499,13 @@ class _StatChip extends StatelessWidget {
   final String value;
   final bool highlight;
 
-  const _StatChip({
-    required this.label,
-    required this.value,
-    this.highlight = false,
-  });
+  const _StatChip({required this.label, required this.value, this.highlight = false});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          '$label：',
-          style: TextStyle(fontSize: 11, color: Colors.brown[300]),
-        ),
+        Text('$label：', style: TextStyle(fontSize: 11, color: Colors.brown[300])),
         Text(
           value,
           style: TextStyle(
@@ -447,11 +608,7 @@ class _AddGiftBookSheetState extends State<_AddGiftBookSheet> {
           const SizedBox(height: 16),
           const Text(
             '类型',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF3D2B1F),
-            ),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF3D2B1F)),
           ),
           const SizedBox(height: 8),
           Row(
@@ -505,34 +662,32 @@ class _TypeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Material(
-        color: selected ? const Color(0xFFE07B54) : const Color(0xFFFAF7F2),
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  type == GiftBookType.wedding ? Icons.favorite : Icons.cake,
-                  size: 18,
-                  color: selected ? Colors.white : const Color(0xFFE07B54),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFFE07B54) : const Color(0xFFFAF7F2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                type == GiftBookType.wedding ? Icons.favorite : Icons.cake,
+                size: 18,
+                color: selected ? Colors.white : Colors.brown[400],
+              ),
+              const SizedBox(width: 6),
+              Text(
+                type.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? Colors.white : Colors.brown[400],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  type.label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: selected ? Colors.white : const Color(0xFFE07B54),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
