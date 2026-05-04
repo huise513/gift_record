@@ -318,6 +318,7 @@ class _PreviewCardState extends State<_PreviewCard> {
     return RepaintBoundary(
       key: widget.repaintKey,
       child: Container(
+        padding: const EdgeInsets.all(16),
         color: const Color(0xFFFAF7F2),
         child: Column(
           children: [
@@ -381,9 +382,17 @@ class _PreviewCardState extends State<_PreviewCard> {
                       Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
                       Column(
                         children: [
-                          Text('记录页数', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                          Text('现金', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                           const SizedBox(height: 2),
-                          Text('$pageCount', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text(currencyFmt.format(_sumByMethod(widget.gifts, '现金')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ],
+                      ),
+                      Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
+                      Column(
+                        children: [
+                          Text('微信', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+                          const SizedBox(height: 2),
+                          Text(currencyFmt.format(_sumByMethod(widget.gifts, '微信')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
                     ],
@@ -509,23 +518,6 @@ class _PreviewCardState extends State<_PreviewCard> {
               );
             }),
 
-            // 底部汇总
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _SummaryCol(label: '总笔数', value: '${widget.gifts.length}', color: const Color(0xFFE07B54)),
-                  _SummaryCol(label: '礼金总额', value: currencyFmt.format(widget.totalAmount), color: const Color(0xFFE07B54)),
-                  _SummaryCol(label: '现金', value: currencyFmt.format(_sumByMethod(widget.gifts, '现金'))),
-                  _SummaryCol(label: '微信', value: currencyFmt.format(_sumByMethod(widget.gifts, '微信'))),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -614,24 +606,5 @@ class _PCell extends StatelessWidget {
       );
     }
     return Text(text, textAlign: TextAlign.center, style: style);
-  }
-}
-
-class _SummaryCol extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? color;
-
-  const _SummaryCol({required this.label, required this.value, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.brown[400])),
-        const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color ?? const Color(0xFF8B6347))),
-      ],
-    );
   }
 }
