@@ -250,7 +250,7 @@ class DbService {
              gb.created_at as book_created_at, gb.record_count, gb.total_amount
       FROM gifts g
       JOIN gift_books gb ON g.event_id = gb.id
-      WHERE g.giverName LIKE ? AND g.is_deleted = 0
+      WHERE g.giverName LIKE ?
       ORDER BY gb.created_at DESC, g.createdAt DESC
     ''', [pattern]);
 
