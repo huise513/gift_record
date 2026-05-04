@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_book.dart';
 import '../services/db_service.dart';
-import '../theme/app_theme.dart';
 import 'gift_list_screen.dart';
 
 class GiftBooksScreen extends StatefulWidget {
@@ -40,6 +39,24 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
   }
 
   Future<void> _deleteBook(GiftBook book) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除礼金本 "${book.name}" 吗？删除后可撤销。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     final deletedBook = book;
     await DbService.deleteGiftBook(book.id!);
     setState(() => _books.removeWhere((b) => b.id == book.id));
@@ -53,7 +70,7 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
           action: SnackBarAction(
             label: '撤销',
             onPressed: () async {
-              final id = await DbService.insertGiftBook(deletedBook);
+              await DbService.insertGiftBook(deletedBook);
               _loadBooks();
             },
           ),
