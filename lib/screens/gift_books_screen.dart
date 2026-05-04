@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/gift_book.dart';
 import '../services/db_service.dart';
 import 'gift_list_screen.dart';
+import 'global_search_screen.dart';
 
 class GiftBooksScreen extends StatefulWidget {
   const GiftBooksScreen({super.key});
@@ -130,6 +131,15 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
             letterSpacing: 2,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Color(0xFFE07B54)),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
+            ),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
