@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/gift_entry.dart';
@@ -237,43 +238,45 @@ class DbService {
 
   // ─── 全局搜索 ─────────────────────────────────────────────────────────────
 
-  /// 跨所有礼金本搜索姓名，返回按礼金本创建时间倒序排列
   static Future<List<SearchResult>> searchGifts(String query) async {
     if (query.trim().isEmpty) return [];
 
-    final dbb = await db;
-    final pattern = '%${query.trim()}%';
+    try {
+      final dbb = await db;
+      final pattern = '%${query.trim()}%';
 
-    // 搜索所有礼金本中的匹配记录
-    final maps = await dbb.rawQuery('''
-      SELECT g.*, gb.name as book_name, gb.type as book_type,
-             gb.created_at as book_created_at, gb.record_count, gb.total_amount
-      FROM gifts g
-      JOIN gift_books gb ON g.event_id = gb.id
-      WHERE g.giverName LIKE ?
-      ORDER BY gb.created_at DESC, g.createdAt DESC
-    ''', [pattern]);
+      final maps = await dbb.rawQuery('''
+        SELECT g.id, g.event_id, g.giverName, g.amount, g.paymentMethod,
+               g.note, g.sortOrder, g.createdAt,
+               gb.name as book_name, gb.type as book_type, gb.created_at as book_created_at
+        FROM gifts g
+        JOIN gift_books gb ON g.event_id = gb.id
+        WHERE g.giverName LIKE ?
+        ORDER BY gb.created_at DESC, g.createdAt DESC
+      ''', [pattern]);
 
-    return maps.map((m) {
-      final gift = GiftEntry.fromMap({
-        'id': m['id'],
-        'event_id': m['event_id'],
-        'giverName': m['giverName'],
-        'amount': m['amount'],
-        'paymentMethod': m['paymentMethod'],
-        'note': m['note'],
-        'sortOrder': m['sortOrder'],
-        'createdAt': m['createdAt'],
-      });
-      final book = GiftBook(
-        id: m['event_id'] as int,
-        name: m['book_name'] as String,
-        type: GiftBookType.fromString(m['book_type'] as String),
-        createdAt: DateTime.fromMillisecondsSinceEpoch(m['book_created_at'] as int),
-        recordCount: m['record_count'] as int? ?? 0,
-        totalAmount: (m['total_amount'] as num?)?.toDouble() ?? 0,
-      );
-      return SearchResult(gift: gift, book: book);
-    }).toList();
+      return maps.map((m) {
+        final gift = GiftEntry(
+          id: m['id'] as int?,
+          eventId: m['event_id'] as int,
+          giverName: m['giverName'] as String,
+          amount: (m['amount'] as num).toDouble(),
+          paymentMethod: m['paymentMethod'] as String? ?? '现金',
+          note: m['note'] as String?,
+          sortOrder: m['sortOrder'] as int? ?? 0,
+          createdAt: DateTime.fromMillisecondsSinceEpoch(m['createdAt'] as int),
+        );
+        final book = GiftBook(
+          id: m['event_id'] as int,
+          name: m['book_name'] as String,
+          type: GiftBookType.fromString(m['book_type'] as String),
+          createdAt: DateTime.fromMillisecondsSinceEpoch(m['book_created_at'] as int),
+        );
+        return SearchResult(gift: gift, book: book);
+      }).toList();
+    } catch (e) {
+      debugPrint('searchGifts error: $e');
+      return [];
+    }
   }
 }
