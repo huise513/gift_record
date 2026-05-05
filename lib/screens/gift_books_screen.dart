@@ -833,18 +833,32 @@ class _EditGiftBookSheet extends StatefulWidget {
 class _EditGiftBookSheetState extends State<_EditGiftBookSheet> {
   late final TextEditingController _nameController;
   late GiftBookType _selectedType;
+  late DateTime _selectedDate;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.book.name);
     _selectedType = widget.book.type;
+    _selectedDate = widget.book.createdAt;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
   }
 
   Future<void> _submit() async {
@@ -854,6 +868,7 @@ class _EditGiftBookSheetState extends State<_EditGiftBookSheet> {
     final updated = widget.book.copyWith(
       name: name,
       type: _selectedType,
+      createdAt: _selectedDate,
     );
     await DbService.updateGiftBook(updated);
     widget.onUpdated(updated);
@@ -937,6 +952,33 @@ class _EditGiftBookSheetState extends State<_EditGiftBookSheet> {
                 onTap: () => setState(() => _selectedType = GiftBookType.birthday),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '日期',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF3D2B1F)),
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: _pickDate,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAF7F2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today, color: Color(0xFFE07B54), size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
+                    style: const TextStyle(fontSize: 15, color: Color(0xFF3D2B1F)),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(

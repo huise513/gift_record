@@ -15,6 +15,8 @@ class ExportExcelService {
   /// 导出单个礼金本
   static Future<void> exportSingleBook(GiftBook book, List<GiftEntry> gifts) async {
     final excel = Excel.createExcel();
+    // 删除默认的 Sheet1，避免空 sheet
+    excel.delete('Sheet1');
     final sheetName = _sanitizeSheetName(book.name);
     final sheet = excel[sheetName];
     _buildSheet(sheet, book, gifts);
@@ -24,15 +26,8 @@ class ExportExcelService {
   /// 导出所有礼金本
   static Future<void> exportAllBooks(List<GiftBook> books) async {
     final excel = Excel.createExcel();
-    // 删除默认的 Sheet1
-    final defaultSheet = excel.sheets['Sheet1'];
-    if (defaultSheet != null) {
-      // 重命名为第一个礼金本的名称（如果只有一个礼金本，直接用它）
-      // 否则删掉 Sheet1，后续创建新的
-      if (books.length > 1) {
-        excel.delete('Sheet1');
-      }
-    }
+    // 删除默认的 Sheet1，避免空 sheet
+    excel.delete('Sheet1');
 
     final sortedBooks = [...books]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -40,16 +35,7 @@ class ExportExcelService {
       final book = sortedBooks[i];
       final gifts = await DbService.getGiftsForBook(book.id!);
       final sheetName = _sanitizeSheetName(book.name);
-
-      // 如果是第一个且我们还保留着 Sheet1，用它而不是创建新的
-      Sheet sheet;
-      if (i == 0 && excel.sheets['Sheet1'] != null) {
-        sheet = excel['Sheet1']!;
-        // 重命名 Sheet1 为正确的名称
-        excel.rename('Sheet1', sheetName);
-      } else {
-        sheet = excel[sheetName];
-      }
+      final sheet = excel[sheetName];
       _buildSheet(sheet, book, gifts);
     }
 
