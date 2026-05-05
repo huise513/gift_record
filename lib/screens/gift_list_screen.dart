@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
+import '../models/gift_book.dart';
 import '../services/db_service.dart';
+import '../services/export_excel_service.dart';
 import 'export_screen.dart';
 
 class GiftListScreen extends StatefulWidget {
@@ -161,15 +163,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
               ),
               const Spacer(),
               _ExportButton(onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ExportGiftBookScreen(
-                      gifts: _gifts,
-                      totalAmount: _totalAmount,
-                    ),
-                  ),
-                );
+                _showExportSheet();
               }),
             ],
           ),
@@ -237,15 +231,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
               ),
               const Spacer(),
               _ExportButton(onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ExportGiftBookScreen(
-                      gifts: _gifts,
-                      totalAmount: _totalAmount,
-                    ),
-                  ),
-                );
+                _showExportSheet();
               }),
             ],
           ),
@@ -358,6 +344,60 @@ class _GiftListScreenState extends State<GiftListScreen> {
           await DbService.updateGift(updated);
           _loadGifts();
         },
+      ),
+    );
+  }
+
+  void _showExportSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.image, color: Color(0xFFE07B54)),
+                title: const Text('导出为图片'),
+                subtitle: const Text('生成高清图片，可分享至朋友圈'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ExportGiftBookScreen(
+                        gifts: _gifts,
+                        totalAmount: _totalAmount,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart, color: Color(0xFFE07B54)),
+                title: const Text('导出为 Excel'),
+                subtitle: const Text('导出电子表格，方便编辑统计'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('正在导出 Excel...'), duration: Duration(seconds: 2)),
+                  );
+                  final book = GiftBook(id: widget.bookId, name: widget.bookName, type: GiftBookType.wedding, createdAt: DateTime.now());
+                  await ExportExcelService.exportSingleBook(book, _gifts);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_book.dart';
 import '../services/db_service.dart';
+import '../services/export_excel_service.dart';
 import 'gift_list_screen.dart';
 import 'global_search_screen.dart';
 
@@ -138,6 +139,36 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
               context,
               MaterialPageRoute(builder: (_) => const GlobalSearchScreen()),
             ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Color(0xFFE07B54)),
+            onSelected: (value) async {
+              if (value == 'export_excel') {
+                final books = _books;
+                if (books.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('没有可导出的礼金本'), duration: Duration(seconds: 2)),
+                  );
+                  return;
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('正在导出 Excel...'), duration: Duration(seconds: 2)),
+                );
+                await ExportExcelService.exportAllBooks(books);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'export_excel',
+                child: Row(
+                  children: [
+                    Icon(Icons.table_chart, color: Color(0xFFE07B54)),
+                    SizedBox(width: 8),
+                    Text('导出所有礼金本为 Excel'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
