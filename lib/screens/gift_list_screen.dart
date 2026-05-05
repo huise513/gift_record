@@ -393,7 +393,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('正在导出 Excel...'), duration: Duration(seconds: 2)),
                   );
-                  final book = GiftBook(id: widget.bookId, name: widget.bookName, type: GiftBookType.wedding, createdAt: DateTime.now());
+                  final book = GiftBook(id: widget.bookId, name: widget.bookName, type: GiftBookType.wedding, createdAt: _bookCreatedAt);
                   await ExportExcelService.exportSingleBook(book, _gifts);
                 },
               ),
