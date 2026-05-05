@@ -15,19 +15,16 @@ class ExportExcelService {
   /// 导出单个礼金本
   static Future<void> exportSingleBook(GiftBook book, List<GiftEntry> gifts) async {
     final excel = Excel.createExcel();
-    // 删除默认的 Sheet1，避免空 sheet
-    excel.delete('Sheet1');
     final sheetName = _sanitizeSheetName(book.name);
-    final sheet = excel[sheetName];
-    _buildSheet(sheet, book, gifts);
+    // 先创建目标 sheet，再删除默认 Sheet1（避免 delete 唯一 sheet 的限制）
+    _buildSheet(excel[sheetName], book, gifts);
+    excel.delete('Sheet1');
     await _saveAndShare(excel, '礼金本_${book.name}');
   }
 
   /// 导出所有礼金本
   static Future<void> exportAllBooks(List<GiftBook> books) async {
     final excel = Excel.createExcel();
-    // 删除默认的 Sheet1，避免空 sheet
-    excel.delete('Sheet1');
 
     final sortedBooks = [...books]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -35,9 +32,10 @@ class ExportExcelService {
       final book = sortedBooks[i];
       final gifts = await DbService.getGiftsForBook(book.id!);
       final sheetName = _sanitizeSheetName(book.name);
-      final sheet = excel[sheetName];
-      _buildSheet(sheet, book, gifts);
+      _buildSheet(excel[sheetName], book, gifts);
     }
+    // 删除默认 Sheet1（此时已有 N 个礼金本 sheet，delete 不会受阻）
+    excel.delete('Sheet1');
 
     await _saveAndShare(excel, '所有礼金本');
   }
