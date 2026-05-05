@@ -243,7 +243,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
 
   Future<void> _shareImage(BuildContext context, GlobalKey repaintKey) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('正在生成礼金本图片...')),
+      const SnackBar(content: Text('正在生成礼金本图片...'), duration: Duration(seconds: 2)),
     );
 
     try {
@@ -267,12 +267,12 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
       if (context.mounted) {
         if (result['isSuccess'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('已保存到相册')),
+            const SnackBar(content: Text('已保存到相册'), duration: Duration(seconds: 2)),
           );
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('保存失败: ${result['errorMessage']}')),
+            SnackBar(content: Text('保存失败: ${result['errorMessage']}'), duration: const Duration(seconds: 2)),
           );
         }
       }
@@ -280,7 +280,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
       debugPrint('Capture failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('生成失败: $e')),
+          SnackBar(content: Text('生成失败: $e'), duration: const Duration(seconds: 2)),
         );
       }
     }

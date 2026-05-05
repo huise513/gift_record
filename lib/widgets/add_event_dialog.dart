@@ -57,7 +57,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入宴席名称')),
+        const SnackBar(content: Text('请输入宴席名称'), duration: Duration(seconds: 2)),
       );
       return;
     }

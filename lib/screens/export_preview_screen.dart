@@ -114,6 +114,7 @@ class ExportPreviewScreen extends StatelessWidget {
         SnackBar(
           content: Text(success ? '已保存到相册' : '保存失败，请检查权限'),
           backgroundColor: success ? Colors.green[400] : Colors.red[400],
+          duration: const Duration(seconds: 2),
         ),
       );
     }

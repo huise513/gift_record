@@ -67,7 +67,7 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('已删除 "${deletedBook.name}"'),
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 5),
           action: SnackBarAction(
             label: '撤销',
             onPressed: () async {

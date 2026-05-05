@@ -50,7 +50,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('已删除 "${deletedGift.giverName}" 的记录'),
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 5),
           action: SnackBarAction(
             label: '撤销',
             onPressed: () async {
