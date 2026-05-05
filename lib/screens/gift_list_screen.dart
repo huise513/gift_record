@@ -21,6 +21,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
   List<GiftEntry> _gifts = [];
   double _totalAmount = 0;
   bool _loading = true;
+  DateTime _bookCreatedAt = DateTime.now();
 
   @override
   void initState() {
@@ -30,11 +31,13 @@ class _GiftListScreenState extends State<GiftListScreen> {
 
   Future<void> _loadGifts() async {
     setState(() => _loading = true);
+    final book = await DbService.getGiftBook(widget.bookId);
     final gifts = await DbService.getGiftsForBook(widget.bookId);
     final total = await DbService.getTotalAmountForBook(widget.bookId);
     setState(() {
       _gifts = gifts;
       _totalAmount = total;
+      _bookCreatedAt = book?.createdAt ?? DateTime.now();
       _loading = false;
     });
   }
@@ -158,7 +161,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
           Row(
             children: [
               Text(
-                DateFormat('yyyy年MM月dd日').format(DateTime.now()),
+                DateFormat('yyyy年MM月dd日').format(_bookCreatedAt),
                 style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.7)),
               ),
               const Spacer(),
