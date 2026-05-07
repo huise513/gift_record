@@ -104,7 +104,7 @@ class _AddRecordDialogState extends State<AddRecordDialog> {
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?$')),
               ],
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _submit(),

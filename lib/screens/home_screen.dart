@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
@@ -735,6 +736,9 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                   border: InputBorder.none,
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?$')),
+                ],
               ),
             ),
             const SizedBox(height: 10),

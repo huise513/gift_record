@@ -589,19 +589,16 @@ class _PCell extends StatelessWidget {
           text,
           textAlign: center ? TextAlign.center : TextAlign.center,
           style: style,
-          overflow: TextOverflow.ellipsis,
         ),
       );
     }
     if (flex != null) {
-      return Expanded(
-        flex: flex!,
+      return Flexible(
+        fit: FlexFit.loose,
         child: Text(
           text,
           textAlign: center ? TextAlign.center : TextAlign.center,
           style: style,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
         ),
       );
     }
