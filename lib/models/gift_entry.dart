@@ -8,6 +8,9 @@ class GiftEntry {
   final int sortOrder;
   final DateTime createdAt;
 
+  // Sentinel object to distinguish "not provided" from "explicitly null" in copyWith
+  static const Object _noteSentinel = Object();
+
   GiftEntry({
     this.id,
     required this.eventId,
@@ -25,7 +28,7 @@ class GiftEntry {
     String? giverName,
     double? amount,
     String? paymentMethod,
-    String? note,
+    Object? note = _noteSentinel,
     int? sortOrder,
     DateTime? createdAt,
   }) {
@@ -35,7 +38,7 @@ class GiftEntry {
       giverName: giverName ?? this.giverName,
       amount: amount ?? this.amount,
       paymentMethod: paymentMethod ?? this.paymentMethod,
-      note: note ?? this.note,
+      note: note == _noteSentinel ? this.note : note as String?,
       sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
     );

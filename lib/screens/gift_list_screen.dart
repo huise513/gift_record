@@ -835,11 +835,14 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
     final amount = double.tryParse(amountStr);
     if (amount == null || amount <= 0) return;
 
+    final noteText = _noteController.text.trim();
+    final note = noteText.isEmpty ? null : noteText;
+    debugPrint('save note: "$noteText" -> note=$note');
     final updated = widget.gift.copyWith(
       giverName: name,
       amount: amount,
       paymentMethod: _selectedPayment.label,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      note: note,
     );
 
     await widget.onSaved(updated);
