@@ -814,7 +814,7 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.gift.giverName);
-    _amountController = TextEditingController(text: widget.gift.amount.toString());
+    _amountController = TextEditingController(text: widget.gift.amountDisplay);
     _noteController = TextEditingController(text: widget.gift.note ?? '');
     _selectedPayment = PaymentMethod.fromLabel(widget.gift.paymentMethod);
   }

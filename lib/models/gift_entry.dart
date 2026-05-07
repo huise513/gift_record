@@ -57,6 +57,14 @@ class GiftEntry {
     };
   }
 
+  /// 格式化金额：整数不显示小数点，最多两位小数
+  String get amountDisplay {
+    if (amount == amount.roundToDouble()) {
+      return amount.toInt().toString();
+    }
+    return amount.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+  }
+
   factory GiftEntry.fromMap(Map<String, dynamic> map) {
     return GiftEntry(
       id: map['id'] as int?,
