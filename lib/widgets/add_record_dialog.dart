@@ -88,19 +88,23 @@ class _AddRecordDialogState extends State<AddRecordDialog> {
               decoration: InputDecoration(
                 labelText: '来宾姓名',
                 hintText: '输入姓名',
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 errorText: _nameError,
               ),
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.characters,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextField(
               controller: _amountController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: '礼金金额',
                 hintText: '输入金额',
-                errorText: _amountError,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 prefixText: '¥ ',
+                errorText: _amountError,
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [

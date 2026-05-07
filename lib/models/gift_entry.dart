@@ -93,8 +93,8 @@ class DecimalAmountInputFormatter extends TextInputFormatter {
     final text = newValue.text;
     // 允许空
     if (text.isEmpty) return newValue;
-    // 允许最多9位整数+最多2位小数的格式
-    if (RegExp(r'^(\d{1,9}|\d{0,9}\.\d{1,2})$').hasMatch(text)) {
+    // 允许最多9位整数+最多2位小数的格式（小数点后可以无数字，如 "1."）
+    if (RegExp(r'^(\d{0,9}(\.\d{0,2})?)$').hasMatch(text)) {
       return newValue;
     }
     // 拒绝无效输入，保留原值
