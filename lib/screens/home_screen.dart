@@ -737,7 +737,8 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?$')),
+                  FilteringTextInputFormatter.allow(RegExp(r'\d*\.?\d{0,2}')),
+                  LengthLimitingTextInputFormatter(9),
                 ],
               ),
             ),
