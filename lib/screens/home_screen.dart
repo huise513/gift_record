@@ -464,9 +464,8 @@ class _AddGiftFormState extends State<_AddGiftForm> {
           Row(
             children: [
               Expanded(
-                flex: 3,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
                     borderRadius: BorderRadius.circular(10),
@@ -475,7 +474,7 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                     controller: _nameController,
                     decoration: const InputDecoration(
                       hintText: '姓名',
-                      prefixIcon: Icon(Icons.person_outline, color: Color(0xFFE07B54), size: 16),
+                      prefixIcon: Icon(Icons.person_outline, color: Color(0xFFE07B54), size: 18),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -484,11 +483,10 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Expanded(
-                flex: 2,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
                     borderRadius: BorderRadius.circular(10),
@@ -497,7 +495,7 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                     controller: _amountController,
                     decoration: const InputDecoration(
                       hintText: '金额',
-                      prefixIcon: Icon(Icons.monetization_on_outlined, color: Color(0xFFE07B54), size: 16),
+                      prefixIcon: Icon(Icons.monetization_on_outlined, color: Color(0xFFE07B54), size: 18),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -509,7 +507,7 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
