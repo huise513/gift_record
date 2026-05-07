@@ -476,7 +476,7 @@ class _PreviewCardState extends State<_PreviewCard> {
                                 if (widget.columnConfig.showName) _PCell(gift.giverName, flex: 2),
                                 if (widget.columnConfig.showAmount)
                                   if (widget.columnConfig.paymentAsSeparateColumn)
-                                    _PCell(currencyFmt.format(gift.amount), flex: 3)
+                                    _PCell('¥${gift.amountDisplay}', flex: 3)
                                   else
                                     _PCell(_formatAmount(currencyFmt, gift), flex: 4),
                                 if (widget.columnConfig.showNote) _PCell(gift.note ?? '', flex: 2, fontSize: 11, color: const Color(0xFF9E8B7D)),
@@ -525,10 +525,12 @@ class _PreviewCardState extends State<_PreviewCard> {
   }
 
   String _formatAmount(NumberFormat currencyFmt, GiftEntry gift) {
+    // 使用截断不四舍五入的 display 格式
+    final display = gift.amountDisplay;
     if (gift.paymentMethod != '现金') {
-      return '${currencyFmt.format(gift.amount)}（${gift.paymentMethod}）';
+      return '¥$display（${gift.paymentMethod}）';
     }
-    return currencyFmt.format(gift.amount);
+    return '¥$display';
   }
 
   double _sumByMethod(List<GiftEntry> gifts, String method) {

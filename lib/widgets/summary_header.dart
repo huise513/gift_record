@@ -11,12 +11,21 @@ class SummaryHeader extends StatelessWidget {
     required this.guestCount,
   });
 
+  /// 格式化金额（截断不四舍五入）：整数不显示小数，最多两位小数
   String _formatAmount(int amountFen) {
     final yuan = amountFen / 100;
     if (yuan >= 10000) {
-      return '¥${(yuan / 10000).toStringAsFixed(1)}万';
+      // 截断而非四舍五入
+      final truncated = (yuan / 10000 * 10).floor() / 10;
+      return '¥${truncated.toStringAsFixed(1)}万';
     }
-    return '¥${yuan.toStringAsFixed(0)}';
+    if (yuan == yuan.roundToDouble()) {
+      return '¥${yuan.toInt()}';
+    }
+    // 截断而非四舍五入
+    final truncated = (yuan * 100).floor() / 100;
+    final s = truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return '¥$s';
   }
 
   @override

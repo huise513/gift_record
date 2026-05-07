@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 class GiftEntry {
   final int? id;
   final int eventId; // 所属礼金本ID
@@ -57,12 +59,14 @@ class GiftEntry {
     };
   }
 
-  /// 格式化金额：整数不显示小数点，最多两位小数
+  /// 格式化金额（截断不四舍五入）：整数不显示小数，最多两位小数
   String get amountDisplay {
     if (amount == amount.roundToDouble()) {
       return amount.toInt().toString();
     }
-    return amount.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    // 截断而非四舍五入
+    final truncated = (amount * 100).floor() / 100;
+    return truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
   }
 
   factory GiftEntry.fromMap(Map<String, dynamic> map) {
@@ -76,6 +80,25 @@ class GiftEntry {
       sortOrder: map['sortOrder'] as int? ?? 0,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
     );
+  }
+}
+
+/// 金额输入格式化器：最多9位整数+最多2位小数，输入超限或格式无效时拒绝输入
+class DecimalAmountInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    // 允许空
+    if (text.isEmpty) return newValue;
+    // 允许最多9位整数+最多2位小数的格式
+    if (RegExp(r'^(\d{1,9}|\d{0,9}\.\d{1,2})$').hasMatch(text)) {
+      return newValue;
+    }
+    // 拒绝无效输入，保留原值
+    return oldValue;
   }
 }
 

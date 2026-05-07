@@ -14,9 +14,16 @@ class RecordListTile extends StatelessWidget {
     required this.onDelete,
   });
 
+  /// 格式化金额（截断不四舍五入）：整数不显示小数，最多两位小数
   String _formatAmount(int amountFen) {
     final yuan = amountFen / 100;
-    return '¥${yuan.toStringAsFixed(0)}';
+    if (yuan == yuan.roundToDouble()) {
+      return '¥${yuan.toInt()}';
+    }
+    // 截断而非四舍五入
+    final truncated = (yuan * 100).floor() / 100;
+    final s = truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return '¥$s';
   }
 
   @override
