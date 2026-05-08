@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Returns the entered (name, amountInFen) via Navigator.pop.
 /// Amount field clears after confirm, name field clears too — ready for next entry.
@@ -89,7 +88,10 @@ class _AddRecordDialogState extends State<AddRecordDialog> {
                 labelText: '来宾姓名',
                 hintText: '输入姓名',
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 errorText: _nameError,
               ),
               textInputAction: TextInputAction.next,
@@ -102,14 +104,17 @@ class _AddRecordDialogState extends State<AddRecordDialog> {
                 labelText: '礼金金额',
                 hintText: '输入金额',
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 prefixText: '¥ ',
                 errorText: _amountError,
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                DecimalAmountInputFormatter(),
-              ],
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [DecimalAmountInputFormatter()],
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _submit(),
             ),

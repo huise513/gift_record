@@ -1,0 +1,1 @@
+ /home/huise/projects/gift_record/.dart_tool/flutter_build/309a80499dcb2300753034f34d3f7811/native_assets.json: 

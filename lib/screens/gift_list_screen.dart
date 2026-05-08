@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../models/gift_entry.dart';
@@ -12,7 +11,11 @@ class GiftListScreen extends StatefulWidget {
   final int bookId;
   final String bookName;
 
-  const GiftListScreen({super.key, required this.bookId, required this.bookName});
+  const GiftListScreen({
+    super.key,
+    required this.bookId,
+    required this.bookName,
+  });
 
   @override
   State<GiftListScreen> createState() => _GiftListScreenState();
@@ -98,8 +101,8 @@ class _GiftListScreenState extends State<GiftListScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _gifts.isEmpty
-                  ? _buildEmptyState()
-                  : _buildGiftList(),
+              ? _buildEmptyState()
+              : _buildGiftList(),
         ),
       ],
     );
@@ -130,8 +133,8 @@ class _GiftListScreenState extends State<GiftListScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _gifts.isEmpty
-                  ? _buildEmptyState()
-                  : _buildGiftList(),
+              ? _buildEmptyState()
+              : _buildGiftList(),
         ),
       ],
     );
@@ -163,12 +166,17 @@ class _GiftListScreenState extends State<GiftListScreen> {
             children: [
               Text(
                 DateFormat('yyyy年MM月dd日').format(_bookCreatedAt),
-                style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.7)),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.7),
+                ),
               ),
               const Spacer(),
-              _ExportButton(onPressed: () {
-                _showExportSheet();
-              }),
+              _ExportButton(
+                onPressed: () {
+                  _showExportSheet();
+                },
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -189,7 +197,11 @@ class _GiftListScreenState extends State<GiftListScreen> {
               const SizedBox(width: 16),
               Text(
                 '${_gifts.length}笔  ${currencyFmt.format(_totalAmount)}',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -234,9 +246,11 @@ class _GiftListScreenState extends State<GiftListScreen> {
                 ),
               ),
               const Spacer(),
-              _ExportButton(onPressed: () {
-                _showExportSheet();
-              }),
+              _ExportButton(
+                onPressed: () {
+                  _showExportSheet();
+                },
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -244,8 +258,16 @@ class _GiftListScreenState extends State<GiftListScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _LandscapeStatItem(label: '笔数', value: '${_gifts.length}'),
-              Container(width: 1, height: 24, color: Colors.white.withOpacity(0.25)),
-              _LandscapeStatItem(label: '总额', value: currencyFmt.format(_totalAmount), highlight: true),
+              Container(
+                width: 1,
+                height: 24,
+                color: Colors.white.withOpacity(0.25),
+              ),
+              _LandscapeStatItem(
+                label: '总额',
+                value: currencyFmt.format(_totalAmount),
+                highlight: true,
+              ),
             ],
           ),
         ],
@@ -269,10 +291,17 @@ class _GiftListScreenState extends State<GiftListScreen> {
               color: const Color(0xFFE07B54).withOpacity(0.1),
               borderRadius: BorderRadius.circular(32),
             ),
-            child: const Icon(Icons.card_giftcard, size: 32, color: Color(0xFFE07B54)),
+            child: const Icon(
+              Icons.card_giftcard,
+              size: 32,
+              color: Color(0xFFE07B54),
+            ),
           ),
           const SizedBox(height: 12),
-          Text('暂无记录', style: TextStyle(fontSize: 15, color: Colors.brown[400])),
+          Text(
+            '暂无记录',
+            style: TextStyle(fontSize: 15, color: Colors.brown[400]),
+          ),
         ],
       ),
     );
@@ -310,7 +339,10 @@ class _GiftListScreenState extends State<GiftListScreen> {
             return AnimatedBuilder(
               animation: animation,
               builder: (ctx, child) {
-                final elev = Tween<double>(begin: 0, end: 6).evaluate(animation);
+                final elev = Tween<double>(
+                  begin: 0,
+                  end: 6,
+                ).evaluate(animation);
                 return Material(
                   elevation: elev,
                   color: Colors.transparent,
@@ -366,7 +398,14 @@ class _GiftListScreenState extends State<GiftListScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 8),
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.image, color: Color(0xFFE07B54)),
@@ -386,15 +425,26 @@ class _GiftListScreenState extends State<GiftListScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.table_chart, color: Color(0xFFE07B54)),
+                leading: const Icon(
+                  Icons.table_chart,
+                  color: Color(0xFFE07B54),
+                ),
                 title: const Text('导出为 Excel'),
                 subtitle: const Text('导出电子表格，方便编辑统计'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('正在导出 Excel...'), duration: Duration(seconds: 2)),
+                    const SnackBar(
+                      content: Text('正在导出 Excel...'),
+                      duration: Duration(seconds: 2),
+                    ),
                   );
-                  final book = GiftBook(id: widget.bookId, name: widget.bookName, type: GiftBookType.wedding, createdAt: _bookCreatedAt);
+                  final book = GiftBook(
+                    id: widget.bookId,
+                    name: widget.bookName,
+                    type: GiftBookType.wedding,
+                    createdAt: _bookCreatedAt,
+                  );
                   await ExportExcelService.exportSingleBook(book, _gifts);
                 },
               ),
@@ -422,7 +472,10 @@ class _LandscapeStatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65)),
+        ),
         const SizedBox(height: 2),
         Text(
           value,
@@ -459,7 +512,11 @@ class _ExportButton extends StatelessWidget {
               SizedBox(width: 5),
               Text(
                 '导出',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -526,7 +583,10 @@ class _GiftListItem extends StatelessWidget {
             Flexible(
               child: Text(
                 gift.giverName,
-                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -534,14 +594,20 @@ class _GiftListItem extends StatelessWidget {
               const SizedBox(width: 6),
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE07B54).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     gift.note!,
-                    style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFFE07B54),
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -552,9 +618,15 @@ class _GiftListItem extends StatelessWidget {
         ),
         subtitle: Row(
           children: [
-            Text(dateFmt.format(gift.createdAt), style: TextStyle(fontSize: 10, color: Colors.brown[300])),
+            Text(
+              dateFmt.format(gift.createdAt),
+              style: TextStyle(fontSize: 10, color: Colors.brown[300]),
+            ),
             const SizedBox(width: 6),
-            Text(gift.paymentMethod, style: TextStyle(fontSize: 10, color: Colors.brown[300])),
+            Text(
+              gift.paymentMethod,
+              style: TextStyle(fontSize: 10, color: Colors.brown[300]),
+            ),
           ],
         ),
         trailing: Row(
@@ -562,7 +634,11 @@ class _GiftListItem extends StatelessWidget {
           children: [
             Text(
               currencyFmt.format(gift.amount),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFFE07B54)),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFFE07B54),
+              ),
             ),
             const SizedBox(width: 4),
             Icon(Icons.drag_handle, color: Colors.brown[200], size: 18),
@@ -600,13 +676,17 @@ class _AddGiftFormState extends State<_AddGiftForm> {
     final amount = double.tryParse(amountStr);
     if (amount == null || amount <= 0) return;
 
-    await DbService.insertGift(GiftEntry(
-      eventId: widget.bookId,
-      giverName: name,
-      amount: amount,
-      paymentMethod: _selectedPayment.label,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-    ));
+    await DbService.insertGift(
+      GiftEntry(
+        eventId: widget.bookId,
+        giverName: name,
+        amount: amount,
+        paymentMethod: _selectedPayment.label,
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+      ),
+    );
 
     _nameController.clear();
     _amountController.clear();
@@ -663,7 +743,11 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                     controller: _nameController,
                     decoration: const InputDecoration(
                       hintText: '姓名',
-                      prefixIcon: Icon(Icons.person_outline, color: Color(0xFFE07B54), size: 18),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Color(0xFFE07B54),
+                        size: 18,
+                      ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 11),
                     ),
@@ -684,14 +768,16 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                     controller: _amountController,
                     decoration: const InputDecoration(
                       hintText: '金额',
-                      prefixIcon: Icon(Icons.monetization_on_outlined, color: Color(0xFFE07B54), size: 18),
+                      prefixIcon: Icon(
+                        Icons.monetization_on_outlined,
+                        color: Color(0xFFE07B54),
+                        size: 18,
+                      ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 11),
                     ),
                     keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      DecimalAmountInputFormatter(),
-                    ],
+                    inputFormatters: [DecimalAmountInputFormatter()],
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
                   ),
@@ -703,11 +789,19 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE07B54),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text('记', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: const Text(
+                  '记',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -726,11 +820,14 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                       final isSelected = _selectedPayment == method;
                       return Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => _selectedPayment = method),
+                          onTap: () =>
+                              setState(() => _selectedPayment = method),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFE07B54) : Colors.transparent,
+                              color: isSelected
+                                  ? const Color(0xFFE07B54)
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Center(
@@ -738,8 +835,12 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                                 method.label,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                  color: isSelected ? Colors.white : Colors.brown[400],
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.brown[400],
                                 ),
                               ),
                             ),
@@ -754,7 +855,10 @@ class _AddGiftFormState extends State<_AddGiftForm> {
               GestureDetector(
                 onTap: () => _showNoteDialog(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
                     borderRadius: BorderRadius.circular(8),
@@ -762,9 +866,19 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.note_outlined, size: 15, color: Colors.brown[300]),
+                      Icon(
+                        Icons.note_outlined,
+                        size: 15,
+                        color: Colors.brown[300],
+                      ),
                       const SizedBox(width: 4),
-                      Text('备注', style: TextStyle(fontSize: 11, color: Colors.brown[300])),
+                      Text(
+                        '备注',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.brown[300],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -783,13 +897,22 @@ class _AddGiftFormState extends State<_AddGiftForm> {
         title: const Text('备注'),
         content: TextField(
           controller: _noteController,
-          decoration: const InputDecoration(hintText: '备注', border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            hintText: '备注',
+            border: OutlineInputBorder(),
+          ),
           maxLines: 2,
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('确定')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('确定'),
+          ),
         ],
       ),
     );
@@ -856,7 +979,9 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
@@ -880,9 +1005,20 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
             const SizedBox(height: 14),
             Row(
               children: [
-                const Icon(Icons.edit_outlined, color: Color(0xFFE07B54), size: 20),
+                const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFFE07B54),
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                const Text('编辑记录', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF5C3D2E))),
+                const Text(
+                  '编辑记录',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF5C3D2E),
+                  ),
+                ),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
@@ -901,7 +1037,11 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person_outline, color: Color(0xFFE07B54), size: 18),
+                  const Icon(
+                    Icons.person_outline,
+                    color: Color(0xFFE07B54),
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -926,7 +1066,11 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.monetization_on_outlined, color: Color(0xFFE07B54), size: 18),
+                  const Icon(
+                    Icons.monetization_on_outlined,
+                    color: Color(0xFFE07B54),
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -938,9 +1082,7 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                         contentPadding: EdgeInsets.symmetric(vertical: 12),
                       ),
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        DecimalAmountInputFormatter(),
-                      ],
+                      inputFormatters: [DecimalAmountInputFormatter()],
                     ),
                   ),
                 ],
@@ -962,7 +1104,9 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFE07B54) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFFE07B54)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: Center(
@@ -970,8 +1114,12 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                             method.label,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? Colors.white : Colors.brown[400],
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.brown[400],
                             ),
                           ),
                         ),
@@ -990,7 +1138,11 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.note_outlined, color: Color(0xFFE07B54), size: 18),
+                  const Icon(
+                    Icons.note_outlined,
+                    color: Color(0xFFE07B54),
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -1015,9 +1167,14 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                   backgroundColor: const Color(0xFFE07B54),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('保存', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: const Text(
+                  '保存',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
           ],
