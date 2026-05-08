@@ -734,7 +734,6 @@ class _AddGiftFormState extends State<_AddGiftForm> {
               Expanded(
                 flex: 3,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
                     borderRadius: BorderRadius.circular(10),
@@ -749,7 +748,8 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                         size: 18,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 11),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
@@ -759,7 +759,6 @@ class _AddGiftFormState extends State<_AddGiftForm> {
               Expanded(
                 flex: 2,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
                     borderRadius: BorderRadius.circular(10),
@@ -774,7 +773,8 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                         size: 18,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 11),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [DecimalAmountInputFormatter()],
