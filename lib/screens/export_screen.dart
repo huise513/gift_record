@@ -65,7 +65,10 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       appBar: AppBar(
-        title: Text('导出 ${widget.bookName}'),
+        title: Text(
+          '导出 ${widget.bookName}',
+          overflow: TextOverflow.ellipsis,
+        ),
         backgroundColor: const Color(0xFFE07B54),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -343,15 +346,20 @@ class _PreviewCardState extends State<_PreviewCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        widget.bookName,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 2,
+                      Expanded(
+                        child: Text(
+                          widget.bookName,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(

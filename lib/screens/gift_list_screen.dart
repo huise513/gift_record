@@ -190,17 +190,20 @@ class _GiftListScreenState extends State<GiftListScreen> {
           ),
           Row(
             children: [
-              Text(
-                widget.bookName,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  // letterSpacing: 4,
+              Expanded(
+                child: Text(
+                  widget.bookName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    // letterSpacing: 4,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
                 '${_gifts.length}笔  ${_formatTotal(_totalAmount)}',
                 style: const TextStyle(
@@ -239,7 +242,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
         children: [
           Row(
             children: [
-              Flexible(
+              Expanded(
                 child: Text(
                   widget.bookName,
                   style: const TextStyle(
@@ -249,9 +252,10 @@ class _GiftListScreenState extends State<GiftListScreen> {
                     letterSpacing: 3,
                   ),
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               _ExportButton(
                 onPressed: () {
                   _showExportSheet();
