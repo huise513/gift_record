@@ -1030,62 +1030,46 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
             ),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF7F2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  const Icon(
+              child: TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  hintText: '姓名',
+                  prefixIcon: Icon(
                     Icons.person_outline,
                     color: Color(0xFFE07B54),
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        hintText: '姓名',
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
               ),
             ),
             const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF7F2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  const Icon(
+              child: TextField(
+                controller: _amountController,
+                decoration: const InputDecoration(
+                  hintText: '金额',
+                  prefixIcon: Icon(
                     Icons.monetization_on_outlined,
                     color: Color(0xFFE07B54),
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _amountController,
-                      decoration: const InputDecoration(
-                        hintText: '金额',
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [DecimalAmountInputFormatter()],
-                    ),
-                  ),
-                ],
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [DecimalAmountInputFormatter()],
               ),
             ),
             const SizedBox(height: 10),
@@ -1131,31 +1115,23 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
             ),
             const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF7F2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  const Icon(
+              child: TextField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  hintText: '备注',
+                  prefixIcon: Icon(
                     Icons.note_outlined,
                     color: Color(0xFFE07B54),
                     size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _noteController,
-                      decoration: const InputDecoration(
-                        hintText: '备注',
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
               ),
             ),
             const SizedBox(height: 16),
