@@ -461,12 +461,11 @@ class _PreviewCardState extends State<_PreviewCard> {
                           final index = entry.key;
                           final gift = entry.value;
                           final globalIndex = startIdx + index;
-                          final isEven = index % 2 == 0;
 
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                             decoration: BoxDecoration(
-                              color: isEven ? Colors.white : const Color(0xFFFAF7F2),
+                              color: Colors.white,
                               border: Border(bottom: BorderSide(color: Colors.brown.withOpacity(0.06))),
                             ),
                             child: Row(

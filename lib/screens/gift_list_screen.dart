@@ -179,7 +179,6 @@ class _GiftListScreenState extends State<GiftListScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
           Row(
             children: [
               Flexible(
@@ -189,12 +188,11 @@ class _GiftListScreenState extends State<GiftListScreen> {
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    letterSpacing: 4,
+                    // letterSpacing: 4,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 16),
               Text(
                 '${_gifts.length}笔  ${currencyFmt.format(_totalAmount)}',
                 style: const TextStyle(
@@ -796,8 +794,8 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                   backgroundColor: const Color(0xFFE07B54),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 11,
+                    horizontal: 12,
+                    vertical: 12,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

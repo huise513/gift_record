@@ -4,3 +4,4 @@ build/
 .packages
 .pub-cache/
 .dart_tool/flutter_build/
+.dart_tool/hooks_runner/
