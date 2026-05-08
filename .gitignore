@@ -3,3 +3,4 @@ build/
 .gradle/
 .packages
 .pub-cache/
+.dart_tool/flutter_build/

@@ -732,7 +732,7 @@ class _AddGiftFormState extends State<_AddGiftForm> {
           Row(
             children: [
               Expanded(
-                flex: 3,
+                flex: 5,
                 child: Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
@@ -749,7 +749,10 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                       ),
                       border: InputBorder.none,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
@@ -757,7 +760,7 @@ class _AddGiftFormState extends State<_AddGiftForm> {
               ),
               const SizedBox(width: 8),
               Expanded(
-                flex: 2,
+                flex: 4,
                 child: Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAF7F2),
@@ -774,7 +777,10 @@ class _AddGiftFormState extends State<_AddGiftForm> {
                       ),
                       border: InputBorder.none,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [DecimalAmountInputFormatter()],
@@ -1045,7 +1051,10 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                   ),
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
@@ -1066,7 +1075,10 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                   ),
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [DecimalAmountInputFormatter()],
@@ -1130,7 +1142,10 @@ class _EditGiftSheetState extends State<_EditGiftSheet> {
                   ),
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
