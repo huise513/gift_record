@@ -72,6 +72,15 @@ class _GiftListScreenState extends State<GiftListScreen> {
     }
   }
 
+  /// 格式化总额（截断不四舍五入）
+  String _formatTotal(double amount) {
+    if (amount == amount.roundToDouble()) {
+      return '¥${amount.toInt()}';
+    }
+    final truncated = (amount * 100).floor() / 100;
+    return '¥${truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,8 +202,9 @@ class _GiftListScreenState extends State<GiftListScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const Spacer(),
               Text(
-                '${_gifts.length}笔  ${currencyFmt.format(_totalAmount)}',
+                '${_gifts.length}笔  ${_formatTotal(_totalAmount)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -263,7 +273,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
               ),
               _LandscapeStatItem(
                 label: '总额',
-                value: currencyFmt.format(_totalAmount),
+                value: _formatTotal(_totalAmount),
                 highlight: true,
               ),
             ],
@@ -631,7 +641,7 @@ class _GiftListItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              currencyFmt.format(gift.amount),
+              '¥${gift.amountDisplay}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,

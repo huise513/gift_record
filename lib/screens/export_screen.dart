@@ -376,7 +376,7 @@ class _PreviewCardState extends State<_PreviewCard> {
                         children: [
                           Text('礼金总额', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                           const SizedBox(height: 2),
-                          Text(currencyFmt.format(widget.totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+                          Text(_formatTotal(widget.totalAmount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
                         ],
                       ),
                       Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
@@ -384,7 +384,7 @@ class _PreviewCardState extends State<_PreviewCard> {
                         children: [
                           Text('现金', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                           const SizedBox(height: 2),
-                          Text(currencyFmt.format(_sumByMethod(widget.gifts, '现金')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text(_formatTotal(_sumByMethod(widget.gifts, '现金')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
                       Container(width: 1, height: 28, color: Colors.white.withOpacity(0.3)),
@@ -392,7 +392,7 @@ class _PreviewCardState extends State<_PreviewCard> {
                         children: [
                           Text('微信', style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.65))),
                           const SizedBox(height: 2),
-                          Text(currencyFmt.format(_sumByMethod(widget.gifts, '微信')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text(_formatTotal(_sumByMethod(widget.gifts, '微信')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
                     ],
@@ -505,7 +505,7 @@ class _PreviewCardState extends State<_PreviewCard> {
                           style: TextStyle(fontSize: 10, color: Colors.brown[300]),
                         ),
                         Text(
-                          '本页小计：${currencyFmt.format(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
+                          '本页小计：${_formatTotal(pageGifts.fold(0.0, (sum, g) => sum + g.amount))}',
                           style: const TextStyle(fontSize: 10, color: Color(0xFFE07B54)),
                         ),
                       ],
@@ -534,6 +534,15 @@ class _PreviewCardState extends State<_PreviewCard> {
 
   double _sumByMethod(List<GiftEntry> gifts, String method) {
     return gifts.where((g) => g.paymentMethod == method).fold(0.0, (sum, g) => sum + g.amount);
+  }
+
+  /// 格式化总额（截断不四舍五入）
+  String _formatTotal(double amount) {
+    if (amount == amount.roundToDouble()) {
+      return '¥${amount.toInt()}';
+    }
+    final truncated = (amount * 100).floor() / 100;
+    return '¥${truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '')}';
   }
 }
 
@@ -588,17 +597,17 @@ class _PCell extends StatelessWidget {
         width: width,
         child: Text(
           text,
-          textAlign: center ? TextAlign.center : TextAlign.center,
+          textAlign: TextAlign.center,
           style: style,
         ),
       );
     }
     if (flex != null) {
-      return Flexible(
-        fit: FlexFit.loose,
+      return Expanded(
+        flex: flex!,
         child: Text(
           text,
-          textAlign: center ? TextAlign.center : TextAlign.center,
+          textAlign: TextAlign.center,
           style: style,
         ),
       );

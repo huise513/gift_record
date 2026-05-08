@@ -69,6 +69,16 @@ class GiftEntry {
     return truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
   }
 
+  /// 格式化总额（截断不四舍五入），如 ¥123 或 ¥123.5 或 ¥123.55
+  String get totalDisplay {
+    if (amount == amount.roundToDouble()) {
+      return '¥${amount.toInt()}';
+    }
+    final truncated = (amount * 100).floor() / 100;
+    final s = truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return '¥$s';
+  }
+
   factory GiftEntry.fromMap(Map<String, dynamic> map) {
     return GiftEntry(
       id: map['id'] as int?,

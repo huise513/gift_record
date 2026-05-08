@@ -12,6 +12,15 @@ class ExportExcelService {
   static final _currencyFmt = NumberFormat.currency(symbol: '¥', decimalDigits: 0);
   static final _dateFmt = DateFormat('yyyy年MM月dd日');
 
+  /// 格式化金额（截断不四舍五入）
+  static String _fmtAmt(double amount) {
+    if (amount == amount.roundToDouble()) {
+      return '¥${amount.toInt()}';
+    }
+    final truncated = (amount * 100).floor() / 100;
+    return '¥${truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '')}';
+  }
+
   /// 导出单个礼金本
   static Future<void> exportSingleBook(GiftBook book, List<GiftEntry> gifts) async {
     final excel = Excel.createExcel();
@@ -59,7 +68,7 @@ class ExportExcelService {
     // 统计行（行1）
     final totalAmount = gifts.fold<double>(0, (sum, g) => sum + g.amount);
     final summaryCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
-    summaryCell.value = TextCellValue('共 ${gifts.length} 笔  合计：${currencyFmt.format(totalAmount)}');
+    summaryCell.value = TextCellValue('共 ${gifts.length} 笔  合计：${_fmtAmt(totalAmount)}');
     summaryCell.cellStyle = CellStyle(
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
@@ -104,7 +113,7 @@ class ExportExcelService {
 
       // 金额
       final cell2 = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: startRow + i));
-      cell2.value = TextCellValue(currencyFmt.format(gift.amount));
+      cell2.value = TextCellValue(_fmtAmt(gift.amount));
       cell2.cellStyle = _dataCellStyle(bgColor, HorizontalAlign.Right);
 
       // 支付方式

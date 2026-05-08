@@ -40,6 +40,15 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
     });
   }
 
+  /// 格式化总额（截断不四舍五入）
+  String _fmtTotal(double amount) {
+    if (amount == amount.roundToDouble()) {
+      return '¥${amount.toInt()}';
+    }
+    final truncated = (amount * 100).floor() / 100;
+    return '¥${truncated.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '')}';
+  }
+
   Future<void> _deleteBook(GiftBook book) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -281,7 +290,7 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
             children: [
               Text('礼金总额', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.65))),
               const SizedBox(height: 2),
-              Text(currencyFmt.format(totalAmount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
+              Text(_fmtTotal(totalAmount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFE066))),
             ],
           ),
         ],
@@ -323,7 +332,7 @@ class _GiftBooksScreenState extends State<GiftBooksScreen> {
           const SizedBox(height: 10),
           _LandscapeStatItem(label: '总笔数', value: '$totalRecords'),
           const SizedBox(height: 10),
-          _LandscapeStatItem(label: '礼金总额', value: currencyFmt.format(totalAmount), highlight: true),
+          _LandscapeStatItem(label: '礼金总额', value: _fmtTotal(totalAmount), highlight: true),
         ],
       ),
     );
@@ -533,7 +542,7 @@ class _GiftBookCard extends StatelessWidget {
                           const SizedBox(width: 10),
                           _StatChip(
                             label: '总额',
-                            value: currencyFmt.format(book.totalAmount),
+                            value: book.totalDisplay,
                             highlight: true,
                           ),
                         ],

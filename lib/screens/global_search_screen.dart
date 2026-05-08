@@ -179,7 +179,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  currencyFmt.format(result.gift.amount),
+                  '¥${result.gift.amountDisplay}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
