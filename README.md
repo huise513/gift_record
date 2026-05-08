@@ -4,7 +4,7 @@
 
 ## 发布流程
 
-**重要：每次 release 必须本地构建 APK 并上传到 GitHub Release。**
+**重要：每次 release 必须构建 APK 并上传到 GitHub Release，全程本地命令完成。**
 
 ### 完整发布步骤
 
@@ -14,28 +14,28 @@
    git commit -m "fix: 描述本次修改"
    ```
 
-2. **本地构建 APK（release 版本）**
-   ```bash
-   flutter build apk --release
-   ```
-   产物路径：`build/app/outputs/flutter-apk/app-release.apk`
-
-3. **推送代码到 GitHub**
+2. **推送代码到 GitHub**
    ```bash
    git push origin main
    ```
 
-4. **在本地为本次 commit 打 tag**
+3. **创建 tag 并推送**
    ```bash
    git tag v{x.y.z}
    git push origin v{x.y.z}
    ```
 
-5. **创建 GitHub Release**
-   - 网页操作：https://github.com/huise513/gift_record/releases → "Draft a new release"
-   - 选择对应的 tag
-   - **必须上传 `build/app/outputs/flutter-apk/app-release.apk`**（拖拽上传）
-   - 填写版本说明
+4. **构建 release APK**
+   ```bash
+   flutter build apk --release
+   ```
+   产物路径：`build/app/outputs/flutter-apk/app-release.apk`
+
+5. **创建 GitHub Release 并上传 APK**
+   ```bash
+   gh release create v{x.y.z} --title "v{x.y.z}" --notes "版本说明"
+   gh release upload v{x.y.z} build/app/outputs/flutter-apk/app-release.apk
+   ```
 
 ### 版本号规则
 
@@ -48,5 +48,4 @@
 
 - `app-release.apk` 必须随 release 一起发布，用户下载 APK 即为最新版本
 - debug APK（`app-debug.apk`）无需发布，仅开发调试用
-- 每次发布前确保 `flutter build apk --release` 构建成功
-- release commit 应保持干净，避免混入 `.dart_tool/flutter_build/` 等构建产物
+- `.gitignore` 已包含 `build/`、`.dart_tool/flutter_build/`，确保 commit 不混入构建产物
