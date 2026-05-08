@@ -190,17 +190,15 @@ class _GiftListScreenState extends State<GiftListScreen> {
           ),
           Row(
             children: [
-              Flexible(
-                child: Text(
-                  widget.bookName,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    // letterSpacing: 4,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                widget.bookName,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  // letterSpacing: 4,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
               Text(
@@ -427,6 +425,7 @@ class _GiftListScreenState extends State<GiftListScreen> {
                       builder: (_) => ExportGiftBookScreen(
                         gifts: _gifts,
                         totalAmount: _totalAmount,
+                        bookName: widget.bookName,
                       ),
                     ),
                   );

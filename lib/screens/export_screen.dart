@@ -42,11 +42,13 @@ class ExportGiftBookScreen extends StatefulWidget {
   final List<GiftEntry> gifts;
   final double totalAmount;
   final int recordsPerPage;
+  final String bookName;
 
   const ExportGiftBookScreen({
     super.key,
     required this.gifts,
     required this.totalAmount,
+    required this.bookName,
     this.recordsPerPage = 14,
   });
 
@@ -63,7 +65,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       appBar: AppBar(
-        title: const Text('导出礼金本'),
+        title: Text('导出 ${widget.bookName}'),
         backgroundColor: const Color(0xFFE07B54),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -185,6 +187,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
               recordsPerPage: widget.recordsPerPage,
               repaintKey: _screenRepaintKey,
               columnConfig: _columnConfig,
+              bookName: widget.bookName,
             ),
           ),
         ),
@@ -200,7 +203,6 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Center(
               child: _PreviewCard(
@@ -209,6 +211,7 @@ class _ExportGiftBookScreenState extends State<ExportGiftBookScreen> {
                 recordsPerPage: widget.recordsPerPage,
                 repaintKey: _screenRepaintKey,
                 columnConfig: _columnConfig,
+                bookName: widget.bookName,
               ),
             ),
           ),
@@ -295,6 +298,7 @@ class _PreviewCard extends StatefulWidget {
   final int recordsPerPage;
   final GlobalKey repaintKey;
   final ExportColumnConfig columnConfig;
+  final String bookName;
 
   const _PreviewCard({
     required this.gifts,
@@ -302,6 +306,7 @@ class _PreviewCard extends StatefulWidget {
     this.recordsPerPage = 14,
     required this.repaintKey,
     required this.columnConfig,
+    required this.bookName,
   });
 
   @override
@@ -338,13 +343,13 @@ class _PreviewCardState extends State<_PreviewCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '礼 金 本',
-                        style: TextStyle(
+                      Text(
+                        widget.bookName,
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
-                          letterSpacing: 4,
+                          letterSpacing: 2,
                         ),
                       ),
                       Container(
